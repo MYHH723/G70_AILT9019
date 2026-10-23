@@ -34,8 +34,8 @@ are phrased, not which facts survive the checks.
 Requirements: Python 3.9+ (standard library only). Nothing to install.
 
 ```bash
-git clone <repository-url>
-cd pathfinder
+git clone https://github.com/MYHH723/G70_AILT9019.git
+cd G70_AILT9019
 python3 --version          # 3.9 or newer
 ```
 
@@ -106,7 +106,7 @@ every case, every check and the actual observed value. Nothing in those files is
 ## 5. Repository layout
 
 ```
-pathfinder/
+G70_AILT9019/
   run.sh                  launcher (checks Python version, starts the server)
   data/
     courses.json          16 synthetic course documents
