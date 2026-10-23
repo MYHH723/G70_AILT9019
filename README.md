@@ -109,8 +109,8 @@ every case, every check and the actual observed value. Nothing in those files is
 pathfinder/
   run.sh                  launcher (checks Python version, starts the server)
   data/
-    courses.json          16 synthetic course documents + 4 regulation documents
-    regulations.json      capstone, cohort change, mutual exclusion, workload ceiling
+    courses.json          16 synthetic course documents
+    regulations.json      4 regulation documents: capstone, cohort change, exclusion, workload
     opportunities.json    12 opportunity records of six different kinds
     example_profiles.json 4 saved profiles used in the demo and in testing
   src/
