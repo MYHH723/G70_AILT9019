@@ -1,0 +1,68 @@
+{
+  "profiles": [
+    {
+      "id": "P1",
+      "label": "Year 2, data science interest, no preference on opportunity type",
+      "profile": {
+        "programme": "BEng(CS) 2023-24 intake",
+        "cohort": "2023-24",
+        "year": 2,
+        "completed": ["COMP1117", "MATH1013"],
+        "interests": ["data science", "machine learning", "statistics"],
+        "target_semester": "S1",
+        "workload_ceiling": 4,
+        "opportunity_types": ["research", "internship"],
+        "horizon": "next two semesters"
+      },
+      "query": "I am a Year 2 student interested in data science. What should I study next, and which research or internship options should I investigate?"
+    },
+    {
+      "id": "P2",
+      "label": "Year 2, NLP research focus",
+      "profile": {
+        "programme": "BEng(CS) 2023-24 intake",
+        "cohort": "2023-24",
+        "year": 2,
+        "completed": ["COMP1117", "MATH1013", "COMP2119", "STAT2601"],
+        "interests": ["natural language processing", "deep learning", "research"],
+        "target_semester": "S2",
+        "workload_ceiling": 3,
+        "opportunity_types": ["research"],
+        "horizon": "this academic year"
+      },
+      "query": "I want to get into NLP research. Which courses should I take and which labs are recruiting?"
+    },
+    {
+      "id": "P3",
+      "label": "Year 3, internship focus, tight workload",
+      "profile": {
+        "programme": "BEng(CS) 2023-24 intake",
+        "cohort": "2023-24",
+        "year": 3,
+        "completed": ["COMP1117", "MATH1013", "COMP2119", "COMP2396", "STAT2601"],
+        "interests": ["data engineering", "database", "internship"],
+        "target_semester": "S1",
+        "workload_ceiling": 2,
+        "opportunity_types": ["internship"],
+        "horizon": "one semester"
+      },
+      "query": "I only want internships this term and I cannot take a heavy load. What are my options?"
+    },
+    {
+      "id": "P4",
+      "label": "Year 2, prerequisite gap (no data structures yet)",
+      "profile": {
+        "programme": "BEng(CS) 2023-24 intake",
+        "cohort": "2023-24",
+        "year": 2,
+        "completed": ["COMP1117", "MATH1013"],
+        "interests": ["artificial intelligence", "machine learning"],
+        "target_semester": "S2",
+        "workload_ceiling": 3,
+        "opportunity_types": ["research"],
+        "horizon": "next semester"
+      },
+      "query": "Can I take Introduction to Machine Learning next semester?"
+    }
+  ]
+}
