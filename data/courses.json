@@ -1,0 +1,399 @@
+{
+  "corpus": {
+    "name": "HKU Pathfinder pilot corpus (synthetic fixtures)",
+    "programme": "BEng(CS) 2023-24 intake",
+    "cohort": "2023-24",
+    "frozen_on": "2026-10-20",
+    "notice": "All records below are team-written synthetic fixtures for demonstration and testing. They are not official HKU course pages and must not be cited as such."
+  },
+  "courses": [
+    {
+      "code": "COMP1117",
+      "title": "Computer Programming I",
+      "credits": 6,
+      "offered": [
+        "S1",
+        "S2"
+      ],
+      "prerequisites": [],
+      "exclusions": [],
+      "min_year": 1,
+      "load": "standard",
+      "skills": [
+        "programming",
+        "python",
+        "problem solving"
+      ],
+      "summary": "Foundation course in procedural programming and problem decomposition. Introduces variables, control flow, functions, file input and simple testing.",
+      "source_url": "https://fixtures.pathfinder.local/course/COMP1117",
+      "doc_id": "CRS-COMP1117",
+      "snapshot_date": "2026-10-20"
+    },
+    {
+      "code": "MATH1013",
+      "title": "Mathematics for Engineering",
+      "credits": 6,
+      "offered": [
+        "S1",
+        "S2"
+      ],
+      "prerequisites": [],
+      "exclusions": [],
+      "min_year": 1,
+      "load": "standard",
+      "skills": [
+        "calculus",
+        "linear algebra",
+        "mathematics"
+      ],
+      "summary": "Calculus and linear algebra for engineering students, including matrices, eigenvalues and multivariable differentiation.",
+      "source_url": "https://fixtures.pathfinder.local/course/MATH1013",
+      "doc_id": "CRS-MATH1013",
+      "snapshot_date": "2026-10-20"
+    },
+    {
+      "code": "COMP2119",
+      "title": "Introduction to Data Structures and Algorithms",
+      "credits": 6,
+      "offered": [
+        "S1",
+        "S2"
+      ],
+      "prerequisites": [
+        "COMP1117"
+      ],
+      "exclusions": [
+        "COMP2121",
+        "COMP2123"
+      ],
+      "min_year": 2,
+      "load": "standard",
+      "skills": [
+        "algorithms",
+        "data structures",
+        "complexity",
+        "python"
+      ],
+      "summary": "Abstract data types, trees, hashing, graph traversal and algorithm analysis. Assessed by programming assignments and a written exam.",
+      "source_url": "https://fixtures.pathfinder.local/course/COMP2119",
+      "doc_id": "CRS-COMP2119",
+      "snapshot_date": "2026-10-20"
+    },
+    {
+      "code": "COMP2123",
+      "title": "Data Structures and Algorithms (Intensive)",
+      "credits": 6,
+      "offered": [
+        "S1"
+      ],
+      "prerequisites": [
+        "COMP1117"
+      ],
+      "exclusions": [
+        "COMP2119"
+      ],
+      "min_year": 2,
+      "load": "heavy",
+      "skills": [
+        "algorithms",
+        "data structures",
+        "complexity",
+        "intensive"
+      ],
+      "summary": "Intensive variant of the data structures course for students who want a compressed schedule. Same learning outcomes as COMP2119 but taught in a single semester with extra laboratory hours.",
+      "source_url": "https://fixtures.pathfinder.local/course/COMP2123",
+      "doc_id": "CRS-COMP2123",
+      "snapshot_date": "2026-10-20"
+    },
+    {
+      "code": "COMP2121",
+      "title": "Data Structures (pre-2023 curriculum)",
+      "credits": 6,
+      "offered": [
+        "S1"
+      ],
+      "prerequisites": [
+        "COMP1117"
+      ],
+      "exclusions": [
+        "COMP2119"
+      ],
+      "min_year": 2,
+      "load": "standard",
+      "skills": [
+        "algorithms",
+        "data structures"
+      ],
+      "summary": "Legacy data structures course retained for students admitted before 2023-24. Replaced by COMP2119 for the 2023-24 intake and later.",
+      "source_url": "https://fixtures.pathfinder.local/course/COMP2121",
+      "doc_id": "CRS-COMP2121",
+      "snapshot_date": "2026-10-20"
+    },
+    {
+      "code": "COMP2396",
+      "title": "Object-Oriented Programming and Java",
+      "credits": 6,
+      "offered": [
+        "S1",
+        "S2"
+      ],
+      "prerequisites": [
+        "COMP1117"
+      ],
+      "exclusions": [],
+      "min_year": 2,
+      "load": "standard",
+      "skills": [
+        "java",
+        "object oriented design",
+        "software construction"
+      ],
+      "summary": "Object-oriented design, inheritance, interfaces, generics and exception handling in Java, with a group software construction project.",
+      "source_url": "https://fixtures.pathfinder.local/course/COMP2396",
+      "doc_id": "CRS-COMP2396",
+      "snapshot_date": "2026-10-20"
+    },
+    {
+      "code": "COMP2120",
+      "title": "Computer Organization",
+      "credits": 6,
+      "offered": [
+        "S2"
+      ],
+      "prerequisites": [
+        "COMP1117"
+      ],
+      "exclusions": [],
+      "min_year": 2,
+      "load": "standard",
+      "skills": [
+        "computer architecture",
+        "assembly",
+        "systems"
+      ],
+      "summary": "Machine-level representation of programs, processor datapath, memory hierarchy and an introduction to assembly programming.",
+      "source_url": "https://fixtures.pathfinder.local/course/COMP2120",
+      "doc_id": "CRS-COMP2120",
+      "snapshot_date": "2026-10-20"
+    },
+    {
+      "code": "COMP2502",
+      "title": "Discrete Mathematics",
+      "credits": 6,
+      "offered": [
+        "S1"
+      ],
+      "prerequisites": [
+        "MATH1013"
+      ],
+      "exclusions": [],
+      "min_year": 2,
+      "load": "standard",
+      "skills": [
+        "logic",
+        "proof",
+        "combinatorics",
+        "mathematics"
+      ],
+      "summary": "Propositional and predicate logic, proof techniques, sets, relations, counting and introductory graph theory.",
+      "source_url": "https://fixtures.pathfinder.local/course/COMP2502",
+      "doc_id": "CRS-COMP2502",
+      "snapshot_date": "2026-10-20"
+    },
+    {
+      "code": "COMP3270",
+      "title": "Artificial Intelligence",
+      "credits": 6,
+      "offered": [
+        "S2"
+      ],
+      "prerequisites": [
+        "COMP2119"
+      ],
+      "exclusions": [],
+      "min_year": 2,
+      "load": "standard",
+      "skills": [
+        "search",
+        "reasoning",
+        "artificial intelligence",
+        "planning"
+      ],
+      "summary": "Problem formulation, heuristic search, constraint satisfaction, probabilistic reasoning and an introduction to learning agents.",
+      "source_url": "https://fixtures.pathfinder.local/course/COMP3270",
+      "doc_id": "CRS-COMP3270",
+      "snapshot_date": "2026-10-20"
+    },
+    {
+      "code": "COMP3314",
+      "title": "Introduction to Machine Learning",
+      "credits": 6,
+      "offered": [
+        "S1"
+      ],
+      "prerequisites": [
+        "COMP2119",
+        "STAT2601"
+      ],
+      "exclusions": [],
+      "min_year": 2,
+      "load": "heavy",
+      "skills": [
+        "machine learning",
+        "supervised learning",
+        "model evaluation",
+        "python",
+        "data science"
+      ],
+      "summary": "Supervised and unsupervised learning, regularisation, model selection and evaluation, with a substantial programming project using real datasets.",
+      "source_url": "https://fixtures.pathfinder.local/course/COMP3314",
+      "doc_id": "CRS-COMP3314",
+      "snapshot_date": "2026-10-20"
+    },
+    {
+      "code": "COMP3340",
+      "title": "Applied Deep Learning",
+      "credits": 6,
+      "offered": [
+        "S2"
+      ],
+      "prerequisites": [
+        "COMP3314"
+      ],
+      "exclusions": [],
+      "min_year": 2,
+      "load": "heavy",
+      "skills": [
+        "deep learning",
+        "neural networks",
+        "natural language processing",
+        "pytorch"
+      ],
+      "summary": "Feed-forward and recurrent networks, attention, transfer learning and practical training pipelines. Project work on text or image data.",
+      "source_url": "https://fixtures.pathfinder.local/course/COMP3340",
+      "doc_id": "CRS-COMP3340",
+      "snapshot_date": "2026-10-20"
+    },
+    {
+      "code": "COMP3278",
+      "title": "Introduction to Database Management Systems",
+      "credits": 6,
+      "offered": [
+        "S1",
+        "S2"
+      ],
+      "prerequisites": [
+        "COMP2119"
+      ],
+      "exclusions": [],
+      "min_year": 2,
+      "load": "standard",
+      "skills": [
+        "sql",
+        "data modelling",
+        "database",
+        "data engineering"
+      ],
+      "summary": "Relational modelling, SQL, normalisation, transactions and indexing, with a design-and-implementation project.",
+      "source_url": "https://fixtures.pathfinder.local/course/COMP3278",
+      "doc_id": "CRS-COMP3278",
+      "snapshot_date": "2026-10-20"
+    },
+    {
+      "code": "COMP3230",
+      "title": "Principles of Operating Systems",
+      "credits": 6,
+      "offered": [
+        "S1"
+      ],
+      "prerequisites": [
+        "COMP2120"
+      ],
+      "exclusions": [],
+      "min_year": 2,
+      "load": "heavy",
+      "skills": [
+        "operating systems",
+        "concurrency",
+        "systems programming",
+        "c"
+      ],
+      "summary": "Processes, scheduling, memory management, file systems and concurrency, taught with systems programming assignments in C.",
+      "source_url": "https://fixtures.pathfinder.local/course/COMP3230",
+      "doc_id": "CRS-COMP3230",
+      "snapshot_date": "2026-10-20"
+    },
+    {
+      "code": "COMP3297",
+      "title": "Software Engineering",
+      "credits": 6,
+      "offered": [
+        "S1",
+        "S2"
+      ],
+      "prerequisites": [
+        "COMP2396"
+      ],
+      "exclusions": [],
+      "min_year": 2,
+      "load": "standard",
+      "skills": [
+        "requirements",
+        "testing",
+        "software process",
+        "team project"
+      ],
+      "summary": "Requirements elicitation, design, testing and version control, delivered through a semester-long team project with an external client.",
+      "source_url": "https://fixtures.pathfinder.local/course/COMP3297",
+      "doc_id": "CRS-COMP3297",
+      "snapshot_date": "2026-10-20"
+    },
+    {
+      "code": "STAT2601",
+      "title": "Probability and Statistics I",
+      "credits": 6,
+      "offered": [
+        "S1",
+        "S2"
+      ],
+      "prerequisites": [
+        "MATH1013"
+      ],
+      "exclusions": [],
+      "min_year": 2,
+      "load": "standard",
+      "skills": [
+        "probability",
+        "statistics",
+        "inference",
+        "data science"
+      ],
+      "summary": "Probability models, random variables, sampling distributions, estimation and hypothesis testing.",
+      "source_url": "https://fixtures.pathfinder.local/course/STAT2601",
+      "doc_id": "CRS-STAT2601",
+      "snapshot_date": "2026-10-20"
+    },
+    {
+      "code": "COMP4801",
+      "title": "Final Year Project",
+      "credits": 12,
+      "offered": [
+        "S1",
+        "S2"
+      ],
+      "prerequisites": [],
+      "exclusions": [],
+      "min_year": 4,
+      "load": "heavy",
+      "skills": [
+        "research",
+        "project",
+        "independent study"
+      ],
+      "summary": "Year-long individual project supervised by an academic staff member, assessed by report, artefact and oral presentation.",
+      "source_url": "https://fixtures.pathfinder.local/course/COMP4801",
+      "doc_id": "CRS-COMP4801",
+      "snapshot_date": "2026-10-20"
+    }
+  ]
+}

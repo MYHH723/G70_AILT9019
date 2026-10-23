@@ -1,0 +1,52 @@
+{
+  "regulations": [
+    {
+      "id": "REG-CAPSTONE",
+      "title": "Capstone and final-year project rules",
+      "section": "Programme requirement 6.2",
+      "cohort": "all",
+      "text": "A student may register for COMP4801 Final Year Project only while in the final year of the curriculum (Year 4 for a four-year intake). Students in Year 2 or Year 3 may not register for COMP4801 even if all listed prerequisites are complete. Registration also requires a confirmed supervisor.",
+      "applies_to": ["COMP4801"],
+      "rule": "min_year",
+      "source_url": "https://fixtures.pathfinder.local/regulations/REG-CAPSTONE",
+      "doc_id": "REG-CAPSTONE",
+      "snapshot_date": "2026-10-20"
+    },
+    {
+      "id": "REG-COHORT-2023",
+      "title": "Curriculum change for the 2023-24 intake",
+      "section": "Programme requirement 3.4",
+      "cohort": "2023-24",
+      "text": "Students admitted in 2023-24 or later must take COMP2119 Introduction to Data Structures and Algorithms. COMP2121 Data Structures is retained only for students admitted before 2023-24 and does not satisfy the data structures requirement for the 2023-24 intake.",
+      "applies_to": ["COMP2121"],
+      "rule": "cohort_restricted",
+      "source_url": "https://fixtures.pathfinder.local/regulations/REG-COHORT-2023",
+      "doc_id": "REG-COHORT-2023",
+      "snapshot_date": "2026-10-20"
+    },
+    {
+      "id": "REG-EXCLUSION",
+      "title": "Mutually exclusive courses",
+      "section": "Programme requirement 4.1",
+      "cohort": "all",
+      "text": "Where two courses are listed as mutually exclusive or anti-requisite, both may not be counted towards the major. A student who has passed one of the pair may not subsequently count the other. The two courses must never be presented together as a feasible combination.",
+      "applies_to": ["COMP2119", "COMP2121"],
+      "rule": "exclusion",
+      "source_url": "https://fixtures.pathfinder.local/regulations/REG-EXCLUSION",
+      "doc_id": "REG-EXCLUSION",
+      "snapshot_date": "2026-10-20"
+    },
+    {
+      "id": "REG-WORKLOAD",
+      "title": "Semester workload ceiling",
+      "section": "Programme requirement 5.3",
+      "cohort": "all",
+      "text": "The normal maximum load is 36 credits (six 6-credit courses) per semester. A course marked as heavy-load counts as two standard courses towards this ceiling for planning purposes. Students below the ceiling may still enrol, but plans above it require programme office approval.",
+      "applies_to": [],
+      "rule": "workload",
+      "source_url": "https://fixtures.pathfinder.local/regulations/REG-WORKLOAD",
+      "doc_id": "REG-WORKLOAD",
+      "snapshot_date": "2026-10-20"
+    }
+  ]
+}
