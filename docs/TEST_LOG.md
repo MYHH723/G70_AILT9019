@@ -354,6 +354,54 @@ engine: 16/16 rules hold
 
 ---
 
+## 2026-11-18 - the model layer: wording only, and enforced that way
+
+The rubric requires a model call, and the pilot had none: the status sheet had cut "LLM-written
+prose" and the planner is deterministic. Adding a model naively would have destroyed the thing that
+makes the 24-case evidence worth anything - the same input producing the same output - so the layer
+was added at the only place that does not touch a decision.
+
+**What it does.** `src/llm.py` takes the finished plan, sends the planner's own facts to an
+OpenAI-compatible `/chat/completions` endpoint, and replaces the summary paragraph with the returned
+text. It runs only when `PATHFINDER_LLM_API_KEY` is set. The request is a plain JSON POST with
+`urllib`; there is no SDK and no new dependency.
+
+**What stops it from lying.** The output is checked against the plan before it is used:
+
+| Check | On failure |
+|---|---|
+| every `COMP1234`-shaped code must already be in the plan | reject |
+| every URL must already be in the plan | reject |
+| every ISO date must already be in the plan | reject |
+| no "guaranteed" / "will be admitted" / similar | reject |
+| under 900 characters | reject |
+
+A rejection, a timeout, an HTTP error or a missing key all leave the template in place and record
+the reason in `plan["wording"]`. The plan is never worse for having tried.
+
+**How it is tested without a key.** `tests/llm.py` injects a stub transport that returns whatever
+text the test wants, so the guard is exercised directly rather than the model:
+
+```
+$ python3 -m tests.llm
+llm: 13/13 checks passed
+```
+
+Cases: no key keeps the template; a clean rewrite is accepted and the template is kept alongside it;
+an invented code (`COMP9999`), an invented date (`2027-03-01`), an invented link and a guarantee are
+each rejected; an upstream timeout falls back; the request carries the configured model, endpoint and
+the plan's facts; the guard accepts codes and dates the plan really contains.
+
+**Why the 24 cases still pass.** `tests/run_tests.py`, `tests/baseline.py` and `tests/smoke.py` pass
+`llm=False` explicitly. The evaluation measures the decision layer, and a marker with a key set
+should get identical numbers to one without. Verified after the change: 24/24, baseline 6-0,
+smoke 12/12, engine 16/16, llm 13/13.
+
+**Honest limit.** There is no fluency comparison: no template-vs-model rating, no human preference
+test. The layer is demonstrated to be safe, not demonstrated to be better prose.
+
+---
+
 ## 2026-11-18 - walkthrough: not run
 
 ```

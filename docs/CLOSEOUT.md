@@ -38,6 +38,8 @@ informed by feedback, corpus growth to 20-30 documents, a second agent environme
 | `src/official.py` | new: registry of five real HKU pages, live check with one quoted sentence each, attached as a second citation |
 | `src/channels.py` + `data/channels.json` | new: nine real places to look for opportunities, grouped, with login requirement and live status where the site allows it |
 | `tests/engine.py` | new: decision-rule unit tests that do not depend on what is in the corpus |
+| `src/llm.py` | new: optional wording layer over an OpenAI-compatible endpoint, with a fact guard that rejects invented codes, links, dates and guarantees |
+| `tests/llm.py` | new: wording-guard tests using a stubbed transport, so no key is needed |
 | `tests/live.py` | new: asserts each official page is reachable, still says what the registry relies on, and reports drift |
 | `src/freshness.py` | new: window and snapshot-age audit, printed in every evaluation record |
 | `src/export.py` | new: markdown export that keeps citations and as-of dates |
@@ -79,6 +81,13 @@ rhetorical.
 summer internship is right for the student and wrong for the test suite, which would have gone on
 passing vacuously. The rule now lives in `tests/engine.py` (16 rules, corpus-independent), and case
 B2 was repurposed to the URFP scheme page rather than dropped, so the 24-case commitment holds.
+
+**The rubric asks for a model call, and the build had none.** The status sheet had cut LLM-written
+prose; the rubric expects a model in the loop. The layer was added where it cannot corrupt a
+decision: the model rewrites the summary paragraph from the planner's own facts, and its output is
+rejected if it contains a course code, URL or date the plan does not already hold. Every failure
+falls back to the template, and the 24-case evaluation runs with the model disabled so the numbers
+stay reproducible. `tests/llm.py` (13 checks, stubbed transport) proves the guard without a key.
 
 ## 5. What is genuinely still open
 
