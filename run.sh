@@ -17,6 +17,7 @@ if sys.version_info < (3, 9):
     sys.exit("Python 3.9 or newer is required; found %s" % sys.version.split()[0])
 EOF
 
-echo "Starting HKU Pathfinder on http://127.0.0.1:8765"
-echo "Mode: offline-fixture (no API key, no network). Press Ctrl+C to stop."
+PORT="${PATHFINDER_PORT:-8765}"
+echo "Starting HKU Pathfinder on http://127.0.0.1:${PORT}"
+echo "Mode: offline-fixture (no API key, no model call). Press Ctrl+C to stop."
 exec "$PY" -m src.server

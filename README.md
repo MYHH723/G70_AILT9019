@@ -5,9 +5,9 @@ Given a study profile and a question, it returns a plan that links course eviden
 internship leads, with every recommendation carrying a source link, an as-of date and the
 constraint check that allowed or blocked it.
 
-This repository is the **Week 8 working core** submitted for the AILT9019 Mid-Term Check.
-It is a small, honest prototype: one programme, one cohort, a frozen synthetic corpus, no model
-call required.
+This repository is the working core submitted for the AILT9019 Mid-Term Check, extended with the
+Week 5-6 items the proposal names: the retrieval baseline, the live source check, the export, and
+the hand-off tooling. One programme, one cohort, a frozen synthetic corpus, no model call required.
 
 ---
 
@@ -22,12 +22,29 @@ student profile + question
       -> opportunity verification (window, eligibility, reachability, login wall, record type)
       -> plan: <=3 courses + <=3 verified-open leads + next steps, each with a citation and an as-of date
       -> per-item helpful / not-helpful feedback, stored locally and anonymously
+      -> optional markdown export of the plan, citations included
 ```
 
 Deliberate design choice: the planner is **deterministic**. The same input always produces the same
 output, with no API key, no network access and no cost, so a marker can reproduce the result exactly.
 The prose is templated rather than generated; swapping in an LLM later only changes how the facts
 are phrased, not which facts survive the checks.
+
+Reachability can now come from a real HTTP probe (`src/livecheck.py`) as well as from a staged
+fixture field. The probe only contacts approved hosts, revalidates every redirect, refuses any host
+that resolves to a private or loopback address, and keeps no page content.
+
+Every plan also carries a **channel directory** (`src/channels.py`, `data/channels.json`): nine real
+places to look, grouped into university sources, research schemes and commercial job boards, each
+with what it covers, whether it needs an HKU login, and - for the six that allow it - a live status.
+A channel is a doorway, never evidence that a position is open.
+
+With **live mode** on, the plan also checks the real HKU pages it depends on (`src/official.py`) and
+attaches them as a second, higher-authority citation: the 2023-24 curriculum index, the Faculty of
+Engineering syllabus page, the BEng(CompSc) 2023-24 syllabus PDF, the URFP page and the CEDARS jobs
+page. Each one comes back with its HTTP status, a timestamp, and - where it matters - one quoted
+sentence. The page itself is read into memory for the request and discarded; the pilot links to
+these documents, it does not re-publish them.
 
 ## 2. Setup
 
@@ -49,13 +66,18 @@ There is no `pip install` step and no `.env` file. The pilot never calls a model
 ```
 
 Open <http://127.0.0.1:8765>. Press **Build plan** with the default profile, or load one of the
-four saved profiles (P1-P4) to see a different constraint fire.
+four saved profiles (P1-P4) to see a different constraint fire. **Download this plan (.md)** exports
+the same plan as markdown, keeping every citation and as-of date.
+
+![The interface after one request](docs/img/interface.png)
 
 Command-line equivalent, no browser:
 
 ```bash
 python3 -m src.cli "I am a Year 2 student interested in data science. What should I study next?"
 ```
+
+Port and host can be overridden for testing: `PATHFINDER_PORT=9000 ./run.sh`.
 
 ## 4. How to check the result
 
@@ -77,7 +99,7 @@ python3 -m src.cli "I am a Year 2 student interested in data science. What shoul
 Query: *"I am a Year 2 student interested in data science. What should I study next, and which
 research or internship options should I investigate?"*
 
-**Expected output** (as of 2026-10-23):
+**Expected output** (as of 2026-11-18, corpus revision 2026-11-18):
 
 | Item | Expected | Why |
 |---|---|---|
@@ -88,8 +110,7 @@ research or internship options should I investigate?"*
 | `COMP2120` | not offered | S2 only, target semester is S1 |
 | `COMP2121` | restricted | 2023-24 intake must take COMP2119 instead |
 | `COMP4801` | restricted | Year 4 only |
-| `OPP-NLP-RA` | open | window 2026-10-01 to 2026-11-15, page reachable |
-| `OPP-CV-INTERN` | closed | window ended 2026-08-31 |
+| `OPP-NLP-RA` | open | window 2026-11-01 to 2026-12-15, page reachable |
 | `OPP-NETJOBS` | unverifiable | listing behind a login |
 | `OPP-MALICIOUS` | quarantined | record contains instructions addressed to the system |
 
@@ -101,9 +122,28 @@ python3 -m tests.run_tests            # full 24 cases, expect 24/24
 ```
 
 The run writes `tests/results/core_gate_<date>.md` and `tests/results/full_<date>.md`, which list
-every case, every check and the actual observed value. Nothing in those files is hand-written.
+every case, every check and the actual observed value, plus a freshness audit of the opportunity
+windows on the run date. Nothing in those files is hand-written.
 
-## 5. Repository layout
+## 5. The six checks behind the claims
+
+Each writes a dated record under `docs/` or `tests/results/`. None of them can pass without doing
+the work.
+
+| Command | What it proves | Record |
+|---|---|---|
+| `python3 -m tests.run_tests` | the 24 fixed cases, then the full set | `tests/results/full_<date>.md` |
+| `python3 -m tests.baseline` | retrieval vs the same planner with no corpus lookup | `tests/results/baseline_<date>.md` |
+| `python3 -m tests.smoke` | the three official entry points are reachable now; the snapshot fallback engages on a real failure | `docs/smoke_<date>.md` |
+| `python3 -m tests.live` | every registered official page is still there, still says what the registry claims, and has not silently changed | `docs/live_<date>.md` |
+| `python3 -m tests.engine` | the decision rules themselves - expired, not yet open, login wall, unreachable, injection, prerequisites - independent of the corpus | console |
+| `python3 -m tests.firstuse --clone <url>` | a clean clone reaches a cited result with no installation | `docs/firstuse_<date>.md` |
+| `python3 -m tests.walkthrough --report` | five volunteers, 4 reach a cited result without editing code | `docs/walkthrough_<date>.md` |
+
+The walkthrough is the one item that needs people; the recorder and the protocol are in place, and
+the report says `INCOMPLETE` until the sessions exist.
+
+## 6. Repository layout
 
 ```
 G70_AILT9019/
@@ -111,62 +151,104 @@ G70_AILT9019/
   data/
     courses.json          16 synthetic course documents
     regulations.json      4 regulation documents: capstone, cohort change, exclusion, workload
-    opportunities.json    12 opportunity records of six different kinds
+    opportunities.json    10 opportunity records of six different kinds
+    channels.json         9 real places to look, with what each one covers
     example_profiles.json 4 saved profiles used in the demo and in testing
   src/
     corpus.py             loads and freezes the corpus
     retrieval.py          BM25 + exact course-code lookup
     constraints.py        prerequisite / exclusion / semester / year / cohort checks
-    planner.py            the single planning skill
+    planner.py            the single planning skill, plus the retrieval-disabled ablation
     safety.py             scope limits, action refusal, injection stripping
+    livecheck.py          approved-host HTTP probe and page reader, redirect and private-address guards
+    channels.py           real opportunity channels, live status for the ones that allow it
+    official.py           registry of real official pages, live check, second citation
+    freshness.py          corpus staleness audit
+    export.py             markdown export of a plan
     server.py             local HTTP interface
     cli.py                command-line interface
   web/index.html          the interface (no build step, no external assets)
   tests/
     cases.json            the fixed 24-case set (core=true marks the 12-case gate)
-    run_tests.py          harness; writes dated result files
+    run_tests.py          evaluation harness; writes dated result files
+    baseline.py           retrieval vs no retrieval on C1-C6
+    smoke.py              live reachability and fallback proof
+    live.py               official-page check, quote assertions and drift
+    engine.py             decision-rule unit tests, corpus-independent
+    firstuse.py           clean-clone first-use check
+    walkthrough.py        volunteer session recorder and report
     results/              generated evidence, not edited by hand
   docs/
-    VIDEO_SCRIPT.md       60-second recording plan
     TEST_LOG.md           what was run, what failed, what changed
+    WALKTHROUGH_PROTOCOL.md  how the five sessions are run and recorded
+    smoke_<date>.md       live probe record
+    live_<date>.md        official-page check, quotes and drift
+    firstuse_<date>.md    first-use record
+    walkthrough_<date>.md volunteer record
+    VIDEO_SCRIPT.md       60-second recording plan
 ```
 
-## 6. Known limitations
+## 7. Known limitations
 
 1. **Lexical retrieval only.** There is no embedding index. A question whose wording shares no
    tokens with the corpus ("quantum computing") returns no course and the system says so, rather
    than guessing. This is visible in test C5.
-2. **Synthetic corpus.** All 16 course documents, 4 regulation documents and 12 opportunity
-   records are team-written fixtures. They are not official HKU pages and must not be cited as such.
-   Every URL uses the reserved `fixtures.pathfinder.local` host.
-3. **Simulated reachability.** The snapshot fallback is driven by a `fetch_status` field on each
-   record (`ok` / `unreachable` / `login_required`), not by a live HTTP probe. The behaviour after a
-   failed fetch is real; the failure itself is staged for a reproducible test.
-4. **One programme, one cohort.** Requests outside `BEng(CS) 2023-24 intake` / cohort `2023-24`
+2. **Synthetic corpus.** All 16 course documents, 4 regulation documents and 10 opportunity
+   records are team-written fixtures; they are not official HKU pages and must not be cited as such.
+   Two expired calls were removed on 2026-11-18 - a closed internship from August is not information
+   a student can act on - and the rule that an expired window is reported closed now lives in
+   `tests/engine.py` instead of resting on a stale record.
+   Every record URL uses the reserved `fixtures.pathfinder.local` host, which does not resolve in a
+   browser. The interface therefore links to a page served by the app (`/fixtures/<kind>/<key>`),
+   labelled "fixture record", which shows the same record with a banner saying it is synthetic and,
+   where one exists, a link to the official entry point a live build would read.
+3. **Synthetic windows.** The application windows are fixtures too. Corpus revision 2026-11-18
+   rolled them forward so the frozen corpus still contains a currently open vacancy; the freshness
+   audit in every evaluation record prints the windows and their state so a stale corpus is visible
+   rather than silent.
+4. **What is real and what is fixture.** The URLs, HTTP statuses, page titles, timestamps and quoted
+   sentences in live mode are real, taken from the page during the request. The course-level facts -
+   prerequisites, exclusions, application windows - are still synthetic fixtures, because parsing and
+   re-publishing the official syllabus is not something the pilot has permission to do. The interface
+   keeps the two citations separate for exactly this reason: `fixture record` is what this build
+   believes, `official page` is where to check it.
+5. **Live mode is opt-in and slow.** Checking five pages takes roughly ten to twenty seconds on a
+   slow link, so it is a checkbox, not the default. A result is cached for five minutes per process.
+6. **One programme, one cohort.** Requests outside `BEng(CS) 2023-24 intake` / cohort `2023-24`
    return a limited answer by design (test D1).
-5. **Crude workload model.** A heavy course counts as two standard courses against the declared
+7. **Crude workload model.** A heavy course counts as two standard courses against the declared
    ceiling. It does not model actual assessment deadlines.
+8. **No language model.** The pilot deliberately has none, so there is no fluency comparison and no
+   model-based baseline; see `tests/results/baseline_<date>.md` for what the ablation does and does
+   not show.
 
-## 7. Safety and scope
+## 8. Safety and scope
 
 - The agent does not log in, apply, email staff, register for courses or guarantee an outcome.
   Such requests are refused and the official manual route is named instead (tests D4, D5).
 - Retrieved text is treated as data. Instruction-like sentences are stripped and the record is
   quarantined for manual review (test D6).
 - A dated snapshot is never presented as a currently open call. Unreachable sources are labelled
-  "verify manually" with their as-of date (tests B3, D3).
+  "verify manually" with their as-of date (tests B3, D3; proven on a live failure in `docs/smoke_*.md`).
+- The probe contacts approved hosts only, revalidates redirects, refuses private and loopback
+  addresses before connecting, and keeps no page content.
 - No personal identifiers are collected. The form takes programme, cohort, year, completed course
   codes and interests only. Feedback records contain an item id, a rating and an optional comment.
 
-## 8. Reproducing a specific test
+## 9. Reproducing a specific test
 
 ```bash
 python3 -m tests.run_tests            # all 24
-grep -A6 '"id": "D6"' tests/results/full_2026-10-23.md
+grep -A6 '"id": "D6"' tests/results/full_2026-11-18.md
 ```
 
-`PATHFINDER_TODAY` pins the evaluation date so that window checks are reproducible:
+The evaluation date is pinned to the corpus revision so that window checks reproduce on any day.
+To evaluate as of another date, pass it explicitly:
 
 ```bash
-PATHFINDER_TODAY=2026-10-23 python3 -m tests.run_tests
+python3 -m tests.run_tests --today 2026-11-18
+PATHFINDER_TODAY=2026-11-18 python3 -m tests.run_tests
 ```
+
+Pinning matters: a run at a later date will legitimately report fewer open leads once the synthetic
+windows pass, and the freshness section of the record will say so.
