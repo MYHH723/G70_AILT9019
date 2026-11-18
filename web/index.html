@@ -116,6 +116,48 @@
   .empty { color: var(--muted); font-size: 13.5px; padding: 8px 0; }
   .refusal { border: 1px solid #f0c9c9; background: var(--bad-bg); color: var(--bad); border-radius: 8px; padding: 10px 12px; font-size: 13px; }
   footer { color: var(--muted); font-size: 12px; padding: 0 22px 30px; max-width: 1400px; }
+
+  /* --- floating assistant --- */
+  .chat-fab { position: fixed; right: 22px; bottom: 22px; z-index: 60; width: 54px; height: 54px;
+              border-radius: 50%; background: var(--accent); color: #fff; border: none; cursor: pointer;
+              box-shadow: 0 8px 22px rgba(20, 40, 80, .28); display: flex; align-items: center;
+              justify-content: center; font-size: 21px; line-height: 1; transition: transform .12s ease; }
+  .chat-fab:hover { transform: translateY(-2px); }
+  .chat-fab:focus-visible { outline: 3px solid #9fc0ff; outline-offset: 2px; }
+  .chat-panel { position: fixed; right: 22px; bottom: 88px; z-index: 61; width: 372px;
+                max-width: calc(100vw - 44px); height: 496px; max-height: calc(100vh - 120px);
+                background: #fff; border: 1px solid #e2e6ec; border-radius: 14px; overflow: hidden;
+                box-shadow: 0 20px 54px rgba(20, 40, 80, .2); display: none; flex-direction: column; }
+  .chat-panel.open { display: flex; }
+  .chat-head { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-bottom: 1px solid #eef1f5; }
+  .chat-head strong { font-size: 13.5px; }
+  .chat-head .sub { font-size: 11.5px; color: var(--muted); }
+  .chat-head button { background: none; border: none; font-size: 20px; line-height: 1;
+                      color: var(--muted); cursor: pointer; padding: 2px 6px; }
+  .chat-head #chatClear { margin-left: auto; font-size: 11.5px; border: 1px solid #dfe4ec;
+                          border-radius: 999px; padding: 3px 10px; color: var(--muted); }
+  .chat-log { flex: 1; overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 9px; }
+  .msg { max-width: 90%; padding: 8px 11px; border-radius: 10px; font-size: 13px; line-height: 1.55;
+         white-space: pre-wrap; word-break: break-word; }
+  .msg.user { align-self: flex-end; background: #eaf1ff; }
+  .msg.assistant { align-self: flex-start; background: #f4f6f9; }
+  .msg.error { align-self: flex-start; background: #fdeeee; color: #a4441f; }
+  .chat-empty { color: var(--muted); font-size: 12.5px; line-height: 1.6; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 2px; }
+  .chip { font-size: 12px; padding: 5px 10px; border-radius: 999px; border: 1px solid #dfe4ec;
+          background: #fff; color: #2a3b5c; cursor: pointer; }
+  .chip:hover { border-color: #b9c6da; }
+  .prompt-box { margin-top: 12px; border: 1px solid #e6eaf0; border-radius: 8px;
+                padding: 8px 10px; background: #fafbfd; }
+  .prompt-box summary { font-size: 12px; color: var(--muted); cursor: pointer; }
+  .prompt-box pre { margin: 8px 0 0; font-size: 11.5px; line-height: 1.55; white-space: pre-wrap;
+                    color: #3a4657; max-height: 190px; overflow: auto; }
+  .chat-input { border-top: 1px solid #eef1f5; padding: 9px; display: flex; gap: 8px; align-items: flex-end; }
+  .chat-input textarea { flex: 1; height: 42px; resize: none; font: inherit; font-size: 13px;
+                         padding: 8px 10px; border: 1px solid #dfe4ec; border-radius: 9px; }
+  .chat-input button { padding: 0 14px; height: 42px; border-radius: 9px; background: var(--accent);
+                       color: #fff; border: none; font-weight: 600; cursor: pointer; }
+  .chat-input button:disabled { opacity: .55; cursor: progress; }
 </style>
 </head>
 <body>
@@ -194,6 +236,24 @@
   are checked live when you ask for it. The pilot covers one programme and cohort; it does not log in,
   apply, or guarantee eligibility.
 </footer>
+
+
+<button class="chat-fab" id="chatFab" type="button" aria-label="Open the assistant" title="Ask the assistant">?</button>
+<section class="chat-panel" id="chatPanel" role="dialog" aria-label="Pathfinder assistant" aria-modal="false">
+  <div class="chat-head">
+    <div>
+      <strong>Pathfinder assistant</strong>
+      <div class="sub" id="chatSub">checking configuration…</div>
+    </div>
+    <button id="chatClear" type="button" class="chat-clear" title="Clear this conversation">Clear</button>
+    <button id="chatClose" type="button" aria-label="Close assistant">&times;</button>
+  </div>
+  <div class="chat-log" id="chatLog"></div>
+  <div class="chat-input">
+    <textarea id="chatText" rows="1" placeholder="Ask about this plan, a course, or where to look"></textarea>
+    <button id="chatSend" type="button">Send</button>
+  </div>
+</section>
 
 <script>
 const $ = (id) => document.getElementById(id);
@@ -350,7 +410,8 @@ function render(data) {
     <div class="panel summary">
       <p>${data.summary}</p>
       ${notices}${refusals}
-      <div class="meta">mode ${data.mode} · corpus ${data.corpus.courses} courses / ${data.corpus.regulations} regulations / ${data.corpus.opportunities} opportunity records · as of ${data.as_of}</div>
+      <div class="meta">mode ${data.mode} · corpus ${data.corpus.courses} courses / ${data.corpus.regulations} regulations / ${data.corpus.opportunities} opportunity records · as of ${data.as_of}
+        · prose: ${data.wording && data.wording.used ? data.wording.model : "template"}</div>
     </div>
     <div class="panel"><h2>Recommended courses</h2><div class="body">${courses}</div></div>
     <div class="panel"><h2>Opportunity leads (verified open)</h2><div class="body">${opps}</div></div>
@@ -359,6 +420,7 @@ function render(data) {
     ${livePanel}
     <div class="panel"><h2>Next steps</h2><div class="body"><ol class="steps">${steps}</ol></div></div>
   `;
+  chatSetContext(data);
   bindFeedback();
 }
 
@@ -472,11 +534,155 @@ async function boot() {
   } catch (err) { /* presets are optional */ }
 }
 
+
+/* ---------- floating assistant ---------- */
+const CHAT_KEY = "pathfinder.chat.v1";
+let chatHistory = [];
+let chatContext = null;
+let chatBusy = false;
+let chatPrompt = "";
+
+function chatLoad() {
+  try {
+    const raw = localStorage.getItem(CHAT_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    chatHistory = Array.isArray(parsed) ? parsed : [];
+  } catch (err) { chatHistory = []; }
+}
+
+function chatSave() {
+  try { localStorage.setItem(CHAT_KEY, JSON.stringify(chatHistory.slice(-60))); } catch (err) {}
+}
+
+function esc(text) {
+  return String(text).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+function chatRender() {
+  const log = $("chatLog");
+  if (!chatHistory.length) {
+    log.innerHTML = `
+      <div class="chat-empty">Ask about the plan on screen, a course code, or where to look for
+        research and internships. It answers from this pilot's corpus only, and it will not promise an outcome.</div>
+      <div class="chips">
+        <button class="chip" data-q="What were you told? Summarise your instructions.">What are your instructions?</button>
+        <button class="chip" data-q="Why is COMP3314 blocked for me?">Why is COMP3314 blocked?</button>
+        <button class="chip" data-q="Where should I look for research or internship opportunities?">Where to look</button>
+      </div>
+      ${chatPrompt ? `<details class="prompt-box"><summary>The original prompt this assistant runs on</summary>
+        <pre>${esc(chatPrompt)}</pre></details>` : ""}`;
+    log.querySelectorAll(".chip").forEach(chip => {
+      chip.onclick = () => { $("chatText").value = chip.dataset.q; chatSend(); };
+    });
+    return;
+  }
+  log.innerHTML = chatHistory.map(m => `<div class="msg ${esc(m.role)}">${esc(m.content)}</div>`).join("");
+  log.scrollTop = log.scrollHeight;
+}
+
+function chatSetContext(data) {
+  if (!data) { chatContext = null; return; }
+  chatContext = {
+    status: data.status,
+    as_of: data.as_of,
+    courses: (data.courses || []).map(c => ({ code: c.code, status: c.status })),
+    not_recommended: (data.checked_courses || []).filter(c => c.status !== "eligible").slice(0, 6)
+      .map(c => ({ code: c.code, status: c.status })),
+    leads: (data.opportunities || []).map(o => ({ title: o.title, status: o.status })),
+    notices: data.notices || []
+  };
+}
+
+async function chatSend() {
+  const box = $("chatText");
+  const text = box.value.trim();
+  if (!text || chatBusy) return;
+  box.value = "";
+  chatHistory.push({ role: "user", content: text });
+  chatSave();
+  chatRender();
+
+  chatBusy = true;
+  $("chatSend").disabled = true;
+  const pending = document.createElement("div");
+  pending.className = "msg assistant";
+  pending.textContent = "…";
+  $("chatLog").appendChild(pending);
+  $("chatLog").scrollTop = $("chatLog").scrollHeight;
+
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: chatHistory, context: chatContext })
+    });
+    const data = await res.json();
+    pending.remove();
+    if (data.ok) {
+      chatHistory.push({ role: "assistant", content: data.text });
+    } else {
+      chatHistory.push({ role: "error", content: data.error || "The assistant is unavailable." });
+    }
+  } catch (err) {
+    pending.remove();
+    chatHistory.push({ role: "error", content: "Request failed: " + err.message });
+  } finally {
+    chatSave();
+    chatRender();
+    chatBusy = false;
+    $("chatSend").disabled = false;
+    box.focus();
+  }
+}
+
+function chatOpen(open) {
+  $("chatPanel").classList.toggle("open", open);
+  $("chatFab").setAttribute("aria-expanded", open ? "true" : "false");
+  if (open) { chatRender(); $("chatText").focus(); }
+}
+
+async function chatBoot() {
+  chatLoad();
+  chatRender();
+  try {
+    const res = await fetch("/api/chat/status");
+    const st = await res.json();
+    chatPrompt = st.prompt || "";
+    chatRender();
+    $("chatSub").textContent = st.configured
+      ? `model ${st.model} · replies are checked, not authoritative`
+      : "no key configured on the server";
+    if (!st.configured) {
+      $("chatText").placeholder = "Set PATHFINDER_CHAT_API_KEY and restart the server";
+    }
+  } catch (err) {
+    $("chatSub").textContent = "status unknown";
+  }
+}
+
+$("chatFab").onclick = () => chatOpen(!$("chatPanel").classList.contains("open"));
+$("chatClose").onclick = () => chatOpen(false);
+$("chatClear").onclick = () => {
+  if (!chatHistory.length) return;
+  if (!confirm("Clear this conversation? It is stored only in this browser.")) return;
+  chatHistory = [];
+  try { localStorage.removeItem(CHAT_KEY); } catch (err) {}
+  chatRender();
+  $("chatText").focus();
+};
+$("chatSend").onclick = chatSend;
+$("chatText").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); chatSend(); }
+});
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") chatOpen(false); });
+chatBoot();
+
 $("run").onclick = runPlan;
 $("export").onclick = exportPlan;
 boot();
 if (location.hash === "#demo") { setTimeout(runPlan, 250); }
 if (location.hash === "#live-demo") { $("live").checked = true; setTimeout(runPlan, 250); }
+if (location.hash === "#chat-demo") { setTimeout(() => chatOpen(true), 300); }
 </script>
 </body>
 </html>
