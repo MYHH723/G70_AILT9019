@@ -11,9 +11,10 @@ from __future__ import annotations
 
 import datetime as _dt
 import os
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
-from . import safety
+from . import channels, official, safety
 from .constraints import evaluate_course, resolve_exclusions
 from .retrieval import BM25, explicit_codes, opportunity_index, course_index, tokenize
 
@@ -49,10 +50,17 @@ def _cite(doc_id: str, url: str, as_of: str) -> dict[str, str]:
 # ---------------------------------------------------------------------------
 # Opportunities
 # ---------------------------------------------------------------------------
-def evaluate_opportunity(record: dict[str, Any], profile: dict[str, Any], today: _dt.date) -> dict[str, Any]:
+def evaluate_opportunity(record: dict[str, Any], profile: dict[str, Any], today: _dt.date,
+                         fetch_status: str | None = None) -> dict[str, Any]:
+    """Check one opportunity record.
+
+    ``fetch_status`` lets a live probe override the record's staged field. When
+    it is omitted the fixture value is used, so every recorded test stays
+    reproducible without network access.
+    """
     clean_summary, injected = safety.strip_injection(record.get("summary", ""))
     year = int(profile.get("year") or 0)
-    fetch = record.get("fetch_status", "ok")
+    fetch = fetch_status or record.get("fetch_status", "ok")
     window_start = record.get("window_start")
     window_end = record.get("window_end")
     flags: set[str] = set()
@@ -245,16 +253,65 @@ def _apply_workload(items: list[dict[str, Any]], profile: dict[str, Any]) -> tup
 
 
 # ---------------------------------------------------------------------------
+# Retrieval-disabled ablation
+# ---------------------------------------------------------------------------
+def _ablation_answer(profile: dict[str, Any], query: str) -> tuple[str, list[str]]:
+    """What the same agent says when it cannot look anything up.
+
+    Used only by ``tests/baseline.py`` to measure what retrieval contributes.
+    The wording is deliberately the *best* a no-retrieval agent can do: fluent,
+    plausible, and specific enough to sound useful - which is exactly why it is
+    dangerous. It names no course code, cites nothing, checks no prerequisite
+    and reads no application window, because it has no source to do it from.
+    """
+    interests = [i for i in (profile.get("interests") or []) if i]
+    focus = interests[0] if interests else "your stated interest"
+    year = profile.get("year") or "current"
+    semester = profile.get("target_semester") or "next semester"
+    summary = (
+        f"For a Year {year} student interested in {focus}, a reasonable {semester} plan is to take an "
+        f"advanced course in {focus} together with a supporting statistics or database course, and to "
+        f"approach a faculty group working on {focus} about research openings. Internships in the same "
+        f"area are usually advertised through the careers office."
+    )
+    steps = [
+        f"Choose one advanced {focus} course and one supporting course for {semester}.",
+        f"Contact a faculty group working on {focus} to ask about research openings.",
+        "Check the careers office listings for internships in this area.",
+    ]
+    return summary, steps
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
-def plan(profile: dict[str, Any], query: str, corpus, today: _dt.date | None = None) -> dict[str, Any]:
+def plan(profile: dict[str, Any], query: str, corpus, today: _dt.date | None = None,
+         reachability: dict[str, str] | None = None,
+         retrieve: bool = True, live: bool = False) -> dict[str, Any]:
+    """Build a plan.
+
+    ``reachability`` maps an opportunity id to a live probe result
+    (``ok`` / ``unreachable`` / ``login_required``). ``retrieve=False`` runs the
+    retrieval-disabled ablation used by the baseline comparison. ``live=True``
+    also checks the real official pages this plan depends on and attaches them as
+    a second, higher-authority citation; it needs network access and is therefore
+    opt-in.
+    """
     today = _today(today)
     notices: list[str] = []
     refused = safety.refusal_block(safety.scan_query(query))
     scope = safety.scope_check(profile, corpus)
 
+    mode = "offline-fixture"
+    if not retrieve:
+        mode = "no-retrieval-ablation"
+    elif reachability:
+        mode = "offline-fixture + live probe"
+    if live and retrieve:
+        mode += " + live official check"
+
     base = {
-        "mode": "offline-fixture",
+        "mode": mode,
         "as_of": today.isoformat(),
         "corpus": corpus.stats(),
         "notices": notices,
@@ -280,6 +337,19 @@ def plan(profile: dict[str, Any], query: str, corpus, today: _dt.date | None = N
             "Check the current curriculum document for your own programme and cohort.",
             "Ask your programme office which course list applies to your intake year.",
         ]
+        channels.attach(base)
+        return base
+
+    if not retrieve:
+        summary, steps = _ablation_answer(profile, query)
+        notices.append(
+            "Ablation mode: no corpus lookup, no documented constraint check and no source citation. "
+            "This answer exists only to measure what retrieval contributes and must not be shown to a student."
+        )
+        base["status"] = "unverified"
+        base["summary"] = summary
+        base["next_steps"] = steps
+        base["trace"] = {"query": query, "candidates": [], "opportunity_candidates": [], "rules_applied": []}
         return base
 
     # --- courses ---------------------------------------------------------
@@ -308,7 +378,14 @@ def plan(profile: dict[str, Any], query: str, corpus, today: _dt.date | None = N
     if not opp_hits:
         opp_hits = [(r, 0.0) for r in corpus.opportunities[:MAX_CANDIDATES]]
 
-    opp_items = [evaluate_opportunity(rec, profile, today) for rec, _ in opp_hits]
+    live_map = reachability or {}
+    if live_map:
+        base["reachability_source"] = "live probe"
+        base["reachability"] = dict(live_map)
+    opp_items = [
+        evaluate_opportunity(rec, profile, today, fetch_status=live_map.get(rec["id"]))
+        for rec, _ in opp_hits
+    ]
     allowed_types = [t.lower() for t in profile.get("opportunity_types", [])]
 
     def type_ok(item: dict[str, Any]) -> bool:
@@ -406,4 +483,15 @@ def plan(profile: dict[str, Any], query: str, corpus, today: _dt.date | None = N
         "opportunity_candidates": [i["id"] for i in opp_items],
         "rules_applied": sorted({"prerequisite", "exclusion", "semester", "min_year", "cohort", "workload"}),
     }
+
+    if live:
+        # Both checks are network-bound and independent; run them together so a
+        # live request costs roughly the slower one, not the sum.
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            official_check = pool.submit(official.attach, base)
+            channel_check = pool.submit(channels.attach, base, True)
+            official_check.result()
+            channel_check.result()
+    else:
+        channels.attach(base)
     return base

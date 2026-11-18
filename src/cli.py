@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 
 from .corpus import DATA_DIR, get_corpus
+from .fixtures import annotate
 from .planner import plan
 
 STATUS_MARK = {
@@ -46,7 +47,7 @@ def main() -> int:
 
     saved = _profiles()[args.profile]
     query = args.query or saved["query"]
-    result = plan(saved["profile"], query, get_corpus())
+    result = annotate(plan(saved["profile"], query, get_corpus()))
 
     print(f"Q: {query}\n")
     print(f"status: {result['status']}  |  mode: {result['mode']}  |  as of {result['as_of']}")
@@ -59,17 +60,21 @@ def main() -> int:
     if result["courses"]:
         print("\nRECOMMENDED COURSES")
         for item in result["courses"]:
+            cite = item["citations"][0]
+            where = cite.get("local_url") or cite["url"]
             print(f"  {STATUS_MARK.get(item['status'], '')} {item['code']} {item['title']}")
             print(f"             {item['reasons'][0]['text']}")
-            print(f"             source {item['citations'][0]['url']} (as of {item['citations'][0]['as_of']})")
+            print(f"             source {cite['url']} (as of {cite['as_of']}) -> {where}")
 
     if result["opportunities"]:
         print("\nVERIFIED OPEN LEADS")
         for item in result["opportunities"]:
             window = item["window"]
+            cite = item["citations"][0]
+            where = cite.get("local_url") or cite["url"]
             print(f"  {STATUS_MARK.get(item['status'], '')} {item['title']} - {item['host']}")
             print(f"             window {window['start']} -> {window['end']} | {item['eligibility']}")
-            print(f"             source {item['citations'][0]['url']} (as of {item['as_of']})")
+            print(f"             source {cite['url']} (as of {item['as_of']}) -> {where}")
 
     checked = result.get("checked_courses", [])
     if checked:

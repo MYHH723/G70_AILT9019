@@ -8,16 +8,20 @@ from __future__ import annotations
 
 import json
 import mimetypes
+import os
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from .corpus import DATA_DIR, get_corpus
+from .export import to_markdown
+from .fixtures import annotate, render as render_fixture
 from .planner import plan
 
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
 FEEDBACK_FILE = DATA_DIR / "feedback.jsonl"
-HOST, PORT = "127.0.0.1", 8765
+HOST = os.environ.get("PATHFINDER_HOST", "127.0.0.1")
+PORT = int(os.environ.get("PATHFINDER_PORT", "8765"))
 
 
 def _read_json(handler) -> dict:
@@ -72,6 +76,19 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/feedback/summary":
             return self._json(200, _feedback_summary())
 
+        if path.startswith("/fixtures/"):
+            segments = [s for s in path.split("/") if s]
+            if len(segments) == 3:
+                page = render_fixture(segments[1], segments[2], get_corpus())
+                if page:
+                    return self._send(200, page.encode("utf-8"), "text/html; charset=utf-8")
+            return self._send(
+                404,
+                b"<h1>No such fixture record</h1><p>The pilot corpus holds course, regulation and "
+                b"opportunity records only.</p>",
+                "text/html; charset=utf-8",
+            )
+
         target = WEB_DIR / ("index.html" if path in {"/", ""} else path.lstrip("/"))
         if not target.exists() or not target.is_file():
             return self._json(404, {"error": "not found"})
@@ -90,7 +107,25 @@ class Handler(BaseHTTPRequestHandler):
             query = (payload.get("query") or "").strip()
             if not query:
                 return self._json(400, {"error": "query is required"})
-            return self._json(200, plan(profile, query, get_corpus()))
+            return self._json(200, annotate(plan(profile, query, get_corpus(),
+                                                 live=bool(payload.get("live")))))
+
+        if path == "/api/export":
+            profile = payload.get("profile") or {}
+            query = (payload.get("query") or "").strip()
+            if not query:
+                return self._json(400, {"error": "query is required"})
+            result = annotate(plan(profile, query, get_corpus(), live=bool(payload.get("live"))))
+            base_url = f"http://{self.headers.get('Host') or f'{HOST}:{PORT}'}"
+            body = to_markdown(result, query, base_url=base_url).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/markdown; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Content-Disposition", 'attachment; filename="pathfinder-plan.md"')
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(body)
+            return
 
         if path == "/api/feedback":
             item_id = payload.get("item_id")
