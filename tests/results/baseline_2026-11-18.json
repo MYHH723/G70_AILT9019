@@ -1,0 +1,418 @@
+{
+  "date": "2026-11-18",
+  "cases": [
+    {
+      "id": "C1",
+      "query": "I am a Year 2 student interested in data science. What should I study next, and which research or internship options should I investigate?",
+      "with": {
+        "status": "ok",
+        "mode": "offline-fixture",
+        "recommended": 3,
+        "cited": 3,
+        "courses_checked": 10,
+        "leads_checked": 10,
+        "rules_applied": 6,
+        "windows_checked": 5,
+        "next_steps": 5,
+        "checks_passed": 6,
+        "checks_total": 6,
+        "checks": [
+          {
+            "check": "min_courses",
+            "passed": true,
+            "detail": "2 recommended"
+          },
+          {
+            "check": "min_opportunities",
+            "passed": true,
+            "detail": "1 verified open"
+          },
+          {
+            "check": "all_courses_cited",
+            "passed": true,
+            "detail": "uncited: none"
+          },
+          {
+            "check": "all_opportunities_dated",
+            "passed": true,
+            "detail": "undated/uncited: none"
+          },
+          {
+            "check": "labelled_interpretation",
+            "passed": true,
+            "detail": "agent-reading label present"
+          },
+          {
+            "check": "next_steps_at_least",
+            "passed": true,
+            "detail": "5 steps"
+          }
+        ],
+        "vacuous_passes": 0,
+        "summary": "Found 2 course option(s) that pass the documented checks and 1 currently open opportunity lead(s) for a Year 2 student in S1."
+      },
+      "without": {
+        "status": "unverified",
+        "mode": "no-retrieval-ablation",
+        "recommended": 0,
+        "cited": 0,
+        "courses_checked": 0,
+        "leads_checked": 0,
+        "rules_applied": 0,
+        "windows_checked": 0,
+        "next_steps": 3,
+        "checks_passed": 3,
+        "checks_total": 6,
+        "checks": [
+          {
+            "check": "min_courses",
+            "passed": false,
+            "detail": "0 recommended"
+          },
+          {
+            "check": "min_opportunities",
+            "passed": false,
+            "detail": "0 verified open"
+          },
+          {
+            "check": "all_courses_cited",
+            "passed": true,
+            "detail": "uncited: none"
+          },
+          {
+            "check": "all_opportunities_dated",
+            "passed": true,
+            "detail": "undated/uncited: none"
+          },
+          {
+            "check": "labelled_interpretation",
+            "passed": false,
+            "detail": "no agent-reading label"
+          },
+          {
+            "check": "next_steps_at_least",
+            "passed": true,
+            "detail": "3 steps"
+          }
+        ],
+        "vacuous_passes": 3,
+        "summary": "For a Year 2 student interested in data science, a reasonable S1 plan is to take an advanced course in data science together with a supporting statistics or database course, and to approach a faculty group working on data science about research openings. Internships in the same area are usually advertised through the careers office."
+      }
+    },
+    {
+      "id": "C2",
+      "query": "I want to get into NLP research. Which courses should I take and which labs are recruiting?",
+      "with": {
+        "status": "ok",
+        "mode": "offline-fixture",
+        "recommended": 2,
+        "cited": 2,
+        "courses_checked": 5,
+        "leads_checked": 6,
+        "rules_applied": 6,
+        "windows_checked": 4,
+        "next_steps": 4,
+        "checks_passed": 3,
+        "checks_total": 3,
+        "checks": [
+          {
+            "check": "min_opportunities",
+            "passed": true,
+            "detail": "1 verified open"
+          },
+          {
+            "check": "all_opportunities_dated",
+            "passed": true,
+            "detail": "undated/uncited: none"
+          },
+          {
+            "check": "next_steps_at_least",
+            "passed": true,
+            "detail": "4 steps"
+          }
+        ],
+        "vacuous_passes": 0,
+        "summary": "Found 1 course option(s) that pass the documented checks and 1 currently open opportunity lead(s) for a Year 2 student in S2."
+      },
+      "without": {
+        "status": "unverified",
+        "mode": "no-retrieval-ablation",
+        "recommended": 0,
+        "cited": 0,
+        "courses_checked": 0,
+        "leads_checked": 0,
+        "rules_applied": 0,
+        "windows_checked": 0,
+        "next_steps": 3,
+        "checks_passed": 2,
+        "checks_total": 3,
+        "checks": [
+          {
+            "check": "min_opportunities",
+            "passed": false,
+            "detail": "0 verified open"
+          },
+          {
+            "check": "all_opportunities_dated",
+            "passed": true,
+            "detail": "undated/uncited: none"
+          },
+          {
+            "check": "next_steps_at_least",
+            "passed": true,
+            "detail": "3 steps"
+          }
+        ],
+        "vacuous_passes": 2,
+        "summary": "For a Year 2 student interested in natural language processing, a reasonable S2 plan is to take an advanced course in natural language processing together with a supporting statistics or database course, and to approach a faculty group working on natural language processing about research openings. Internships in the same area are usually advertised through the careers office."
+      }
+    },
+    {
+      "id": "C3",
+      "query": "I only want internships this term and I cannot take a heavy load. What are my options?",
+      "with": {
+        "status": "ok",
+        "mode": "offline-fixture",
+        "recommended": 3,
+        "cited": 3,
+        "courses_checked": 8,
+        "leads_checked": 8,
+        "rules_applied": 6,
+        "windows_checked": 4,
+        "next_steps": 4,
+        "checks_passed": 3,
+        "checks_total": 3,
+        "checks": [
+          {
+            "check": "min_opportunities",
+            "passed": true,
+            "detail": "1 verified open"
+          },
+          {
+            "check": "opportunities_match_type",
+            "passed": true,
+            "detail": "non-matching leads: none"
+          },
+          {
+            "check": "max_courses",
+            "passed": true,
+            "detail": "2 recommended"
+          }
+        ],
+        "vacuous_passes": 0,
+        "summary": "Found 2 course option(s) that pass the documented checks and 1 currently open opportunity lead(s) for a Year 3 student in S1."
+      },
+      "without": {
+        "status": "unverified",
+        "mode": "no-retrieval-ablation",
+        "recommended": 0,
+        "cited": 0,
+        "courses_checked": 0,
+        "leads_checked": 0,
+        "rules_applied": 0,
+        "windows_checked": 0,
+        "next_steps": 3,
+        "checks_passed": 2,
+        "checks_total": 3,
+        "checks": [
+          {
+            "check": "min_opportunities",
+            "passed": false,
+            "detail": "0 verified open"
+          },
+          {
+            "check": "opportunities_match_type",
+            "passed": true,
+            "detail": "non-matching leads: none"
+          },
+          {
+            "check": "max_courses",
+            "passed": true,
+            "detail": "0 recommended"
+          }
+        ],
+        "vacuous_passes": 2,
+        "summary": "For a Year 3 student interested in data engineering, a reasonable S1 plan is to take an advanced course in data engineering together with a supporting statistics or database course, and to approach a faculty group working on data engineering about research openings. Internships in the same area are usually advertised through the careers office."
+      }
+    },
+    {
+      "id": "C4",
+      "query": "I can only manage a light semester. What should I take?",
+      "with": {
+        "status": "ok",
+        "mode": "offline-fixture",
+        "recommended": 3,
+        "cited": 3,
+        "courses_checked": 7,
+        "leads_checked": 8,
+        "rules_applied": 6,
+        "windows_checked": 4,
+        "next_steps": 5,
+        "checks_passed": 2,
+        "checks_total": 2,
+        "checks": [
+          {
+            "check": "deferred_at_least",
+            "passed": true,
+            "detail": "1 deferred"
+          },
+          {
+            "check": "max_courses",
+            "passed": true,
+            "detail": "2 recommended"
+          }
+        ],
+        "vacuous_passes": 0,
+        "summary": "Found 2 course option(s) that pass the documented checks and 1 currently open opportunity lead(s) for a Year 3 student in S1."
+      },
+      "without": {
+        "status": "unverified",
+        "mode": "no-retrieval-ablation",
+        "recommended": 0,
+        "cited": 0,
+        "courses_checked": 0,
+        "leads_checked": 0,
+        "rules_applied": 0,
+        "windows_checked": 0,
+        "next_steps": 3,
+        "checks_passed": 1,
+        "checks_total": 2,
+        "checks": [
+          {
+            "check": "deferred_at_least",
+            "passed": false,
+            "detail": "0 deferred"
+          },
+          {
+            "check": "max_courses",
+            "passed": true,
+            "detail": "0 recommended"
+          }
+        ],
+        "vacuous_passes": 1,
+        "summary": "For a Year 3 student interested in machine learning, a reasonable S1 plan is to take an advanced course in machine learning together with a supporting statistics or database course, and to approach a faculty group working on machine learning about research openings. Internships in the same area are usually advertised through the careers office."
+      }
+    },
+    {
+      "id": "C5",
+      "query": "I want a plan for quantum computing research placements.",
+      "with": {
+        "status": "partial",
+        "mode": "offline-fixture",
+        "recommended": 1,
+        "cited": 1,
+        "courses_checked": 1,
+        "leads_checked": 4,
+        "rules_applied": 6,
+        "windows_checked": 2,
+        "next_steps": 1,
+        "checks_passed": 2,
+        "checks_total": 2,
+        "checks": [
+          {
+            "check": "status_in",
+            "passed": true,
+            "detail": "status=partial"
+          },
+          {
+            "check": "no_guarantee_language",
+            "passed": true,
+            "detail": "guarantee phrasing: none"
+          }
+        ],
+        "vacuous_passes": 0,
+        "summary": "No course in the frozen corpus passed the documented checks for this request, so no study plan is offered. 1 opportunity lead(s) are currently open and are listed separately."
+      },
+      "without": {
+        "status": "unverified",
+        "mode": "no-retrieval-ablation",
+        "recommended": 0,
+        "cited": 0,
+        "courses_checked": 0,
+        "leads_checked": 0,
+        "rules_applied": 0,
+        "windows_checked": 0,
+        "next_steps": 3,
+        "checks_passed": 1,
+        "checks_total": 2,
+        "checks": [
+          {
+            "check": "status_in",
+            "passed": false,
+            "detail": "status=unverified"
+          },
+          {
+            "check": "no_guarantee_language",
+            "passed": true,
+            "detail": "guarantee phrasing: none"
+          }
+        ],
+        "vacuous_passes": 1,
+        "summary": "For a Year 2 student interested in quantum computing, a reasonable S1 plan is to take an advanced course in quantum computing together with a supporting statistics or database course, and to approach a faculty group working on quantum computing about research openings. Internships in the same area are usually advertised through the careers office."
+      }
+    },
+    {
+      "id": "C6",
+      "query": "I want to do applied deep learning next semester. Is that realistic?",
+      "with": {
+        "status": "partial",
+        "mode": "offline-fixture",
+        "recommended": 1,
+        "cited": 1,
+        "courses_checked": 5,
+        "leads_checked": 7,
+        "rules_applied": 6,
+        "windows_checked": 4,
+        "next_steps": 3,
+        "checks_passed": 2,
+        "checks_total": 2,
+        "checks": [
+          {
+            "check": "course_status",
+            "passed": true,
+            "detail": "COMP3340=blocked"
+          },
+          {
+            "check": "summary_contains",
+            "passed": true,
+            "detail": "summary has 'COMP3340': True"
+          }
+        ],
+        "vacuous_passes": 0,
+        "summary": "COMP3340 Applied Deep Learning is blocked: Blocked: prerequisite(s) not completed - COMP3314. No course in the frozen corpus passed the documented checks for this request, so no study plan is offered. 1 opportunity lead(s) are currently open and are listed separately."
+      },
+      "without": {
+        "status": "unverified",
+        "mode": "no-retrieval-ablation",
+        "recommended": 0,
+        "cited": 0,
+        "courses_checked": 0,
+        "leads_checked": 0,
+        "rules_applied": 0,
+        "windows_checked": 0,
+        "next_steps": 3,
+        "checks_passed": 0,
+        "checks_total": 2,
+        "checks": [
+          {
+            "check": "course_status",
+            "passed": false,
+            "detail": "COMP3340 was not checked at all"
+          },
+          {
+            "check": "summary_contains",
+            "passed": false,
+            "detail": "summary has 'COMP3340': False"
+          }
+        ],
+        "vacuous_passes": 0,
+        "summary": "For a Year 2 student interested in deep learning, a reasonable S2 plan is to take an advanced course in deep learning together with a supporting statistics or database course, and to approach a faculty group working on deep learning about research openings. Internships in the same area are usually advertised through the careers office."
+      }
+    }
+  ],
+  "corpus": {
+    "courses": 16,
+    "regulations": 4,
+    "opportunities": 10
+  }
+}

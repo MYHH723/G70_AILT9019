@@ -6,6 +6,12 @@ proposal; the full set runs only after the gate passes.
 
     python3 -m tests.run_tests --gate
     python3 -m tests.run_tests
+    python3 -m tests.run_tests --today 2026-11-18
+
+The run date is pinned by default so that window checks are reproducible. Pass
+``--today`` (or set ``PATHFINDER_TODAY``) to evaluate as of another day; the
+corpus freshness audit in the written record shows what that day does to the
+opportunity windows.
 """
 
 from __future__ import annotations
@@ -13,6 +19,7 @@ from __future__ import annotations
 import argparse
 import datetime as _dt
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -20,9 +27,13 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from src.corpus import get_corpus  # noqa: E402
+from src.freshness import audit, to_markdown  # noqa: E402
 from src.planner import plan  # noqa: E402
 
-TODAY = _dt.date(2026, 10, 23)
+# Pinned evaluation date. It matches the corpus revision so that a fresh clone
+# reproduces the same result on any day.
+DEFAULT_TODAY = _dt.date(2026, 11, 18)
+TODAY = DEFAULT_TODAY
 CASES = ROOT / "tests" / "cases.json"
 OUT_DIR = ROOT / "tests" / "results"
 
@@ -164,9 +175,16 @@ def run_case(case: dict, corpus) -> dict:
 
 
 def main() -> int:
+    global TODAY
     parser = argparse.ArgumentParser()
     parser.add_argument("--gate", action="store_true", help="run the 12-case core gate only")
+    parser.add_argument("--today", default=None, help="evaluate as of this date (YYYY-MM-DD)")
     args = parser.parse_args()
+
+    if args.today:
+        TODAY = _dt.date.fromisoformat(args.today)
+    elif os.environ.get("PATHFINDER_TODAY"):
+        TODAY = _dt.date.fromisoformat(os.environ["PATHFINDER_TODAY"])
 
     cases = json.loads(CASES.read_text(encoding="utf-8"))["cases"]
     if args.gate:
@@ -176,12 +194,14 @@ def main() -> int:
     records = [run_case(case, corpus) for case in cases]
     passed = sum(1 for r in records if r["passed"])
     total = len(records)
+    fresh = audit(corpus, TODAY)
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     label = "core_gate" if args.gate else "full"
     stamp = TODAY.isoformat()
     (OUT_DIR / f"{label}_{stamp}.json").write_text(
-        json.dumps({"run": label, "date": stamp, "passed": passed, "total": total, "records": records},
+        json.dumps({"run": label, "date": stamp, "passed": passed, "total": total,
+                    "freshness": fresh, "records": records},
                    indent=2, ensure_ascii=False),
         encoding="utf-8",
     )
@@ -208,9 +228,21 @@ def main() -> int:
         for c in r["checks"]:
             lines.append(f"- [{'x' if c['passed'] else ' '}] {c['check']}: {c['detail']}")
         lines.append("")
+
+    lines += [
+        "## Corpus freshness on the run date",
+        "",
+        f"Opportunity records: {fresh['counts']['records']}, currently open vacancies: "
+        f"{fresh['counts']['live_vacancies']}, expired vacancies: {fresh['counts']['expired_vacancies']}, "
+        f"snapshots older than {120} days: {fresh['counts']['stale_snapshots']}.",
+        "",
+        to_markdown(fresh),
+        "",
+    ]
     (OUT_DIR / f"{label}_{stamp}.md").write_text("\n".join(lines), encoding="utf-8")
 
     print(f"{label}: {passed}/{total} cases passed")
+    print(f"freshness: {fresh['counts']['live_vacancies']} open vacancy record(s) - {fresh['verdict']}")
     for r in records:
         if not r["passed"]:
             failing = [c for c in r["checks"] if not c["passed"]]
