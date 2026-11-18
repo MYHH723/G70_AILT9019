@@ -66,6 +66,23 @@
   button:hover { border-color: #c9d0da; }
   button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; width: 100%; margin-top: 14px; padding: 10px 12px; }
   button.primary:disabled { opacity: .6; cursor: progress; }
+  button.secondary { width: 100%; margin-top: 8px; padding: 9px 12px; color: var(--muted); }
+  button.secondary:disabled { opacity: .5; cursor: not-allowed; }
+  .toggle { display: flex; gap: 8px; align-items: flex-start; margin-top: 12px; font-size: 12.5px;
+            color: var(--muted); line-height: 1.45; cursor: pointer; }
+  .toggle input { margin-top: 2px; }
+  .official { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e6eaf0; font-size: 12px; }
+  .official a { color: #1f5fd0; }
+  .official.ok { color: #1f6b4a; }
+  .official.bad { color: #a4441f; }
+  .official.none { color: #8a939f; }
+  .chan-group { margin-top: 14px; }
+  .chan-head { font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+               color: var(--muted); margin-bottom: 6px; }
+  .chan { border: 1px solid #e6eaf0; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+  .chan .top { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .chan a { color: #1f5fd0; font-weight: 600; text-decoration: none; }
+  .chan .facts { margin-top: 4px; }
   .presets { display: flex; flex-wrap: wrap; gap: 6px; }
   .presets button { font-size: 12px; padding: 5px 9px; background: #f2f4f8; }
   .result { display: flex; flex-direction: column; gap: 14px; }
@@ -156,7 +173,11 @@
       <label for="query">Question</label>
       <textarea id="query">I am a Year 2 student interested in data science. What should I study next, and which research or internship options should I investigate?</textarea>
 
+      <label class="toggle"><input type="checkbox" id="live" />
+        <span>Check the real HKU pages for this plan (slower, needs a network connection)</span></label>
+
       <button class="primary" id="run">Build plan</button>
+      <button class="secondary" id="export" disabled>Download this plan (.md)</button>
       <div class="meta" id="status"></div>
     </div>
   </section>
@@ -169,7 +190,9 @@
 </main>
 
 <footer>
-  Synthetic fixtures only — not official HKU pages. The pilot covers one programme and cohort; it does not log in, apply, or guarantee eligibility.
+  Course and opportunity records are synthetic fixtures. The official pages linked above are real and
+  are checked live when you ask for it. The pilot covers one programme and cohort; it does not log in,
+  apply, or guarantee eligibility.
 </footer>
 
 <script>
@@ -190,6 +213,36 @@ function feedbackRow(itemId) {
   </div>`;
 }
 
+function citeLink(cite, asOf) {
+  if (!cite || (!cite.url && !cite.local_url)) return "";
+  // A fixture citation resolves to a page served by this app, because the
+  // recorded host is reserved and does not resolve. The label says so.
+  if (cite.local_url) {
+    return `<a href="${cite.local_url}" title="Synthetic fixture record - not an official HKU page">fixture record · as of ${asOf || cite.as_of}</a>`;
+  }
+  return `<a href="${cite.url}" target="_blank" rel="noopener">source · as of ${asOf || cite.as_of}</a>`;
+}
+
+function liveBadge(status) {
+  const cls = status === "ok" ? "open" : (status === "login_required" ? "not_yet_open" : "blocked");
+  return `<span class="pill ${cls}">${status.replace(/_/g, " ")}</span>`;
+}
+
+function officialRow(item) {
+  if (!("official" in item)) return "";
+  if (item.official === null) {
+    const fb = item.official_fallback;
+    return `<div class="official none">no official page is mapped to this synthetic record` +
+      (fb ? ` · check yourself: <a href="${fb.url}" target="_blank" rel="noopener">${fb.label}</a>` : "") +
+      `</div>`;
+  }
+  const o = item.official;
+  const cls = o.status === "ok" ? "ok" : "bad";
+  const when = o.checked_at ? ` · ${o.checked_at.slice(11, 16)}` : "";
+  return `<div class="official ${cls}">official page: ` +
+    `<a href="${o.url}" target="_blank" rel="noopener">${o.label}</a> · live ${o.status}${when}</div>`;
+}
+
 function courseCard(item) {
   const reasons = item.reasons.map(r =>
     `<div class="reason"><span class="lab">${r.label}</span>${r.text}</div>`).join("");
@@ -197,12 +250,13 @@ function courseCard(item) {
   const facts = [
     `<span>${item.credits} credits · ${item.load} load</span>`,
     `<span>Offered ${item.offered.join(", ") || "n/a"}</span>`,
-    cite.url ? `<a href="${cite.url}" target="_blank" rel="noopener">source · as of ${cite.as_of}</a>` : ""
+    citeLink(cite)
   ].filter(Boolean).join("");
   return `<div class="card">
     <div class="top"><span class="code">${item.code}</span><span class="title">${item.title}</span>${pill(item.status)}</div>
     ${reasons}
     <div class="facts">${facts}</div>
+    ${officialRow(item)}
     ${feedbackRow(item.code)}
   </div>`;
 }
@@ -217,7 +271,9 @@ function oppCard(item) {
     <div class="top"><span class="title">${item.title}</span>${pill(item.status)}</div>
     <div class="facts"><span>${item.host}</span><span>${window}</span><span>${item.type.replace(/_/g, " ")}</span></div>
     ${reasons}
-    <div class="facts"><a href="${item.citations[0].url}" target="_blank" rel="noopener">source · as of ${item.as_of}</a></div>
+    <div class="facts"><a href="${item.citations[0].local_url || item.citations[0].url}"
+      ${item.citations[0].local_url ? 'title="Synthetic fixture record - not an official HKU page"' : 'target="_blank" rel="noopener"'}>${item.citations[0].local_url ? "fixture record" : "source"} · as of ${item.as_of}</a></div>
+    ${officialRow(item)}
     ${feedbackRow(item.id)}
   </div>`;
 }
@@ -254,6 +310,42 @@ function render(data) {
 
   const steps = data.next_steps.map(s => `<li>${s}</li>`).join("");
 
+  const chans = data.channels || [];
+  const byKind = {};
+  chans.forEach(c => { (byKind[c.kind] = byKind[c.kind] || []).push(c); });
+  const channelsPanel = chans.length
+    ? `<div class="panel"><h2>Where to look</h2><div class="body">
+        <div class="meta">${data.channels_note || ""}</div>
+        ${Object.keys(byKind).map(k => `<div class="chan-group">
+          <div class="chan-head">${byKind[k][0].kind_label}</div>
+          ${byKind[k].map(c => `<div class="chan">
+            <div class="top"><a href="${c.url}" target="_blank" rel="noopener">${c.label}</a>
+              ${c.login_required ? '<span class="pill not_yet_open">login required</span>' : ""}
+              ${c.live && c.live.status && c.live.status !== "not_checked" ? liveBadge(c.live.status) : ""}
+              ${c.live && c.live.status === "not_checked" ? '<span class="pill scheme">link only</span>' : ""}
+            </div>
+            <div class="facts"><span>${c.covers}</span></div>
+            <div class="reason"><span class="lab">agent reading</span>${c.note}</div>
+          </div>`).join("")}
+        </div>`).join("")}
+      </div></div>`
+    : "";
+
+  const liveSources = (data.live && data.live.sources) || [];
+  const livePanel = liveSources.length
+    ? `<div class="panel"><h2>Official pages checked</h2><div class="body">
+        <div class="meta">Checked ${data.live.checked_at}. Status and quotes come from the page during this request.
+        Course-level facts in this plan still come from the pilot fixtures.</div>
+        ${liveSources.map(s => `<div class="card">
+          <div class="top"><span class="title">${s.label}</span>${liveBadge(s.status)}</div>
+          <div class="facts"><a href="${s.url}" target="_blank" rel="noopener">${s.url}</a>
+            <span>HTTP ${s.http_status || "-"}</span><span>${s.checked_at || ""}</span></div>
+          ${s.quote ? `<div class="reason"><span class="lab">quoted</span>${s.quote}</div>` : ""}
+          <div class="reason"><span class="lab">agent reading</span>${s.note}</div>
+        </div>`).join("")}
+      </div></div>`
+    : "";
+
   $("result").innerHTML = `
     <div class="panel summary">
       <p>${data.summary}</p>
@@ -263,37 +355,78 @@ function render(data) {
     <div class="panel"><h2>Recommended courses</h2><div class="body">${courses}</div></div>
     <div class="panel"><h2>Opportunity leads (verified open)</h2><div class="body">${opps}</div></div>
     ${unverifiedHtml}${blockedHtml}${deferred}
+    ${channelsPanel}
+    ${livePanel}
     <div class="panel"><h2>Next steps</h2><div class="body"><ol class="steps">${steps}</ol></div></div>
   `;
   bindFeedback();
 }
 
-async function runPlan() {
-  const profile = {
-    programme: $("programme").value.trim(),
-    cohort: $("cohort").value.trim(),
-    year: Number($("year").value),
-    completed: $("completed").value.split(",").map(s => s.trim()).filter(Boolean),
-    interests: $("interests").value.split(",").map(s => s.trim()).filter(Boolean),
-    target_semester: $("semester").value,
-    workload_ceiling: Number($("ceiling").value),
-    opportunity_types: ["research", "internship"]
+function currentPayload() {
+  return {
+    profile: {
+      programme: $("programme").value.trim(),
+      cohort: $("cohort").value.trim(),
+      year: Number($("year").value),
+      completed: $("completed").value.split(",").map(s => s.trim()).filter(Boolean),
+      interests: $("interests").value.split(",").map(s => s.trim()).filter(Boolean),
+      target_semester: $("semester").value,
+      workload_ceiling: Number($("ceiling").value),
+      opportunity_types: ["research", "internship"]
+    },
+    query: $("query").value,
+    live: $("live").checked
   };
+}
+
+async function runPlan() {
+  const payload = currentPayload();
   $("run").disabled = true;
-  $("status").textContent = "Retrieving evidence and applying constraints…";
+  $("export").disabled = true;
+  $("status").textContent = payload.live
+    ? "Retrieving evidence, then checking the real HKU pages…"
+    : "Retrieving evidence and applying constraints…";
   try {
     const res = await fetch("/api/plan", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ profile, query: $("query").value })
+      body: JSON.stringify(payload)
     });
     const data = await res.json();
     render(data);
+    $("export").disabled = false;
     $("status").textContent = `plan built · ${data.trace ? data.trace.candidates.length : 0} course candidates checked`;
   } catch (err) {
     $("status").textContent = "Request failed: " + err.message;
   } finally {
     $("run").disabled = false;
+  }
+}
+
+async function exportPlan() {
+  $("export").disabled = true;
+  $("status").textContent = "Preparing the markdown export…";
+  try {
+    const res = await fetch("/api/export", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(currentPayload())
+    });
+    if (!res.ok) throw new Error(`export failed (${res.status})`);
+    const text = await res.text();
+    const url = URL.createObjectURL(new Blob([text], { type: "text/markdown" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "pathfinder-plan.md";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    $("status").textContent = "Exported pathfinder-plan.md — citations and as-of dates are kept in the file.";
+  } catch (err) {
+    $("status").textContent = "Export failed: " + err.message;
+  } finally {
+    $("export").disabled = false;
   }
 }
 
@@ -340,8 +473,10 @@ async function boot() {
 }
 
 $("run").onclick = runPlan;
+$("export").onclick = exportPlan;
 boot();
 if (location.hash === "#demo") { setTimeout(runPlan, 250); }
+if (location.hash === "#live-demo") { $("live").checked = true; setTimeout(runPlan, 250); }
 </script>
 </body>
 </html>
