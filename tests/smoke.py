@@ -123,7 +123,7 @@ def run(today: _dt.date, timeout: float, retries: int = 1) -> dict:
     # 4. Fallback proof ---------------------------------------------------
     saved = _profiles()["P1"]
     profile, query = saved["profile"], saved["query"]
-    baseline = plan(profile, query, corpus, today=today)
+    baseline = plan(profile, query, corpus, today=today, llm=False)
     open_ids = [item["id"] for item in baseline["opportunities"]]
     fallback = None
     if open_ids:
@@ -145,7 +145,7 @@ def run(today: _dt.date, timeout: float, retries: int = 1) -> dict:
         cases = []
         for label, row in trials:
             live_status = reachability_map([row])[row["url"]]
-            after = plan(profile, query, corpus, today=today, reachability={target: live_status})
+            after = plan(profile, query, corpus, today=today, reachability={target: live_status}, llm=False)
             moved = next((o for o in after["checked_opportunities"] if o["id"] == target), None)
             reasons = " ".join(r["text"] for r in (moved or {}).get("reasons", []))
             entry = {

@@ -74,8 +74,8 @@ def run(today: _dt.date) -> dict:
              if c["category"] == PLANNING_CATEGORY]
     rows = []
     for case in cases:
-        with_retrieval = plan(case["profile"], case["query"], corpus, today=today)
-        without = plan(case["profile"], case["query"], corpus, today=today, retrieve=False)
+        with_retrieval = plan(case["profile"], case["query"], corpus, today=today, llm=False)
+        without = plan(case["profile"], case["query"], corpus, today=today, retrieve=False, llm=False)
         rows.append(
             {
                 "id": case["id"],

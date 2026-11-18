@@ -154,7 +154,7 @@ def check(kind: str, spec: dict, result: dict) -> tuple[bool, str]:
 
 
 def run_case(case: dict, corpus) -> dict:
-    result = plan(case["profile"], case["query"], corpus, today=TODAY)
+    result = plan(case["profile"], case["query"], corpus, today=TODAY, llm=False)
     checks = []
     for spec in case["checks"]:
         spec = dict(spec)

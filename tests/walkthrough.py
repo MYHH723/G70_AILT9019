@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import datetime as _dt
 import json
+import os
 import secrets
 import statistics
 import sys
@@ -84,10 +85,16 @@ def cmd_start(task: str) -> int:
             "started_at": _dt.datetime.now().astimezone().isoformat(timespec="seconds"),
         }
     )
+    # The launcher differs by platform: run.sh is a shell script, so Windows
+    # needs the module form. Printing the wrong one sends the observer to a
+    # command that fails, which is exactly what this tool is meant to prevent.
+    windows = os.name == "nt"
+    launcher = "python -m src.server" if windows else "./run.sh"
+    py = "python" if windows else "python3"
     print(f"session {session}")
     print(f"task {task}: {TASKS[task]}")
-    print("start the app:  ./run.sh   then open http://127.0.0.1:8765")
-    print(f"when done:      python3 -m tests.walkthrough --finish {session} --cited yes --edited no --seconds 180")
+    print(f"start the app:  {launcher}   then open http://127.0.0.1:8765")
+    print(f"when done:      {py} -m tests.walkthrough --finish {session} --cited yes --edited no --seconds 180")
     return 0
 
 
