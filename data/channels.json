@@ -1,0 +1,96 @@
+{
+  "notice": "Real places to look for research and internship opportunities. These are links, not listings: the pilot has no permission to ingest vacancy pages, so it points at the source instead of pretending to know what is open. Entries marked probe=true are checked live; the others block automated requests and are offered as links only.",
+  "revision": "2026-11-18",
+  "channels": [
+    {
+      "id": "CH-CEDARS-JOBS",
+      "kind": "hku",
+      "label": "CEDARS careers - jobs and internships",
+      "url": "https://www.cedars.hku.hk/careers/jobs",
+      "covers": "internship schemes, career fairs, and the entry point to the job portals",
+      "login_required": false,
+      "probe": true,
+      "note": "The university careers office. This page links out to the portals rather than listing vacancies itself, so treat it as a doorway, not a vacancy."
+    },
+    {
+      "id": "CH-NETJOBS",
+      "kind": "hku",
+      "label": "HKU NETjobs portal",
+      "url": "https://www.cedars.hku.hk/NETjobs",
+      "covers": "the portal where HKU students and new graduates search and apply for jobs and internships",
+      "login_required": true,
+      "probe": true,
+      "note": "Behind an HKU login. The pilot cannot read it, and will not ask you to sign in for it - open it yourself with your own credentials."
+    },
+    {
+      "id": "CH-JIJIS",
+      "kind": "hku",
+      "label": "JIJIS - Joint Institutional Job Information System",
+      "url": "https://www.jijis.org.hk/",
+      "covers": "job and internship listings shared across UGC-funded universities",
+      "login_required": true,
+      "probe": true,
+      "note": "Run by the UGC-funded universities together. Some listings are public, others need your university account."
+    },
+    {
+      "id": "CH-URFP",
+      "kind": "research",
+      "label": "Undergraduate Research Fellowship Programme",
+      "url": "https://tl.hku.hk/urfp/",
+      "covers": "research internship scheme, eligibility, and the faculty contacts who set the deadlines",
+      "login_required": false,
+      "probe": true,
+      "note": "The scheme page publishes eligibility but no deadline of its own: it sends you to the relevant Faculty Office. That is where the date comes from."
+    },
+    {
+      "id": "CH-ENGG-RESEARCH",
+      "kind": "research",
+      "label": "Faculty of Engineering - research",
+      "url": "https://engg.hku.hk/Research",
+      "covers": "research groups and areas in the faculty, useful for finding a lab to approach",
+      "login_required": false,
+      "probe": true,
+      "note": "A research-interest page, not a recruitment notice. A group listed here is not necessarily hiring; ask the group directly."
+    },
+    {
+      "id": "CH-HKSTP",
+      "kind": "research",
+      "label": "Hong Kong Science and Technology Parks",
+      "url": "https://www.hkstp.org/",
+      "covers": "innovation and technology companies that host internships",
+      "login_required": false,
+      "probe": true,
+      "note": "An external organisation, not part of HKU. Useful when you want industry experience outside the university."
+    },
+    {
+      "id": "CH-CYBERPORT",
+      "kind": "research",
+      "label": "Cyberport",
+      "url": "https://www.cyberport.hk/",
+      "covers": "digital technology community and its internship and talent schemes",
+      "login_required": false,
+      "probe": false,
+      "note": "Blocks automated requests, so the pilot cannot check it. Open it yourself; the link is offered as is."
+    },
+    {
+      "id": "CH-JOBSDB",
+      "kind": "commercial",
+      "label": "JobsDB Hong Kong",
+      "url": "https://hk.jobsdb.com/",
+      "covers": "general Hong Kong job market, including part-time and internship listings",
+      "login_required": false,
+      "probe": false,
+      "note": "A commercial job board. Listings are written by employers, not checked by the university; verify the company before you apply."
+    },
+    {
+      "id": "CH-LINKEDIN",
+      "kind": "commercial",
+      "label": "LinkedIn Jobs",
+      "url": "https://www.linkedin.com/jobs/",
+      "covers": "professional network job search, including internships at larger firms",
+      "login_required": true,
+      "probe": false,
+      "note": "Needs an account. Blocks automated requests, so the pilot cannot check it."
+    }
+  ]
+}
