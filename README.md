@@ -56,7 +56,62 @@ cd G70_AILT9019
 python3 --version          # 3.9 or newer
 ```
 
-There is no `pip install` step and no `.env` file. The pilot never calls a model API.
+There is no `pip install` step and no `.env` file. The core path needs no model and no API key.
+
+### Optional: model-written prose
+
+The summary paragraph can be written by a model instead of the template. It is off unless a key is
+present, and it never changes a decision - only the wording. Three environment variables control it,
+with the same names on macOS, Linux and Windows:
+
+```
+PATHFINDER_LLM_API_KEY=...      enables the layer
+PATHFINDER_LLM_BASE_URL=...     default https://open.bigmodel.cn/api/coding/paas/v4
+PATHFINDER_LLM_MODEL=...        default glm-4.6
+PATHFINDER_LLM_THINKING=...     enabled | disabled (default disabled)
+```
+
+Any OpenAI-compatible endpoint works; the request is a plain JSON POST with the standard library.
+
+Notes from wiring up the course-provided GLM key (2026-11-18): `glm-4.6` answers on both
+`/api/paas/v4` and `/api/coding/paas/v4`, while `glm-4-flash` and `glm-4.5-flash` return error 1309
+("Coding Plan expired") on that key. `glm-4.6` is a reasoning model: with `thinking` enabled it can
+spend the whole `max_tokens` budget on `reasoning_content` and return an empty answer, so thinking is
+disabled by default and the budget is 1200 for chat, 700 for the rewrite.
+
+What the model may and may not do is enforced, not promised (`src/llm.py`): it receives the plan's
+facts as JSON, and its output is rejected outright if it contains a course code, URL or date that is
+not already in the plan, or any promise of an outcome. A rejected rewrite, a timeout or a missing key
+all fall back to the template. `tests/llm.py` proves this with a stubbed transport, so it needs no key.
+
+### Floating assistant
+
+A round button sits in the bottom-right corner of the page; it opens a chat panel over the interface.
+The conversation is kept in `localStorage` under `pathfinder.chat.v1`, so a refresh does not lose it,
+and it never leaves the browser except as the request body.
+
+The browser never holds the API key. The page posts to `/api/chat` on the local server, and the
+server calls the upstream endpoint with a key read from the environment:
+
+```
+PATHFINDER_CHAT_API_KEY=...      required for the assistant
+PATHFINDER_CHAT_BASE_URL=...     default https://open.bigmodel.cn/api/coding/paas/v4
+PATHFINDER_CHAT_MODEL=...        default glm-4.6
+PATHFINDER_CHAT_THINKING=...     enabled | disabled (default disabled)
+```
+
+`PATHFINDER_CHAT_*` falls back to the `PATHFINDER_LLM_*` names, so one key can drive both the prose
+rewrite and the assistant. No key is committed: `.gitignore` covers `.env`, `.env.*`, `*.key` and
+`*.pem`, and the code only ever reads the variable.
+
+Replies are checked before they are shown (`src/chat.py`): a course code that does not exist in the
+corpus, or any promise of an outcome, withholds the whole reply and explains why. This is not
+theoretical - asking the live model to "recommend a course that does not exist, like COMP9999" made
+it do exactly that, and the reply was withheld before it reached the screen. Calls are
+serialised and spaced by at least 0.8 s, because the course announcement warns that concurrent
+requests can get a shared group key suspended. `tests/chat.py` covers all of this with a stub.
+
+
 
 ## 3. Run the core path
 
@@ -125,7 +180,7 @@ The run writes `tests/results/core_gate_<date>.md` and `tests/results/full_<date
 every case, every check and the actual observed value, plus a freshness audit of the opportunity
 windows on the run date. Nothing in those files is hand-written.
 
-## 5. The six checks behind the claims
+## 5. The seven checks behind the claims
 
 Each writes a dated record under `docs/` or `tests/results/`. None of them can pass without doing
 the work.
@@ -137,6 +192,8 @@ the work.
 | `python3 -m tests.smoke` | the three official entry points are reachable now; the snapshot fallback engages on a real failure | `docs/smoke_<date>.md` |
 | `python3 -m tests.live` | every registered official page is still there, still says what the registry claims, and has not silently changed | `docs/live_<date>.md` |
 | `python3 -m tests.engine` | the decision rules themselves - expired, not yet open, login wall, unreachable, injection, prerequisites - independent of the corpus | console |
+| `python3 -m tests.llm` | the wording guard: invented codes, links, dates and guarantees are rejected, and every failure falls back | console |
+| `python3 -m tests.chat` | the assistant's guard and error paths: unknown course codes, promises, a rejected key, empty input, history cap | console |
 | `python3 -m tests.firstuse --clone <url>` | a clean clone reaches a cited result with no installation | `docs/firstuse_<date>.md` |
 | `python3 -m tests.walkthrough --report` | five volunteers, 4 reach a cited result without editing code | `docs/walkthrough_<date>.md` |
 
@@ -165,6 +222,8 @@ G70_AILT9019/
     official.py           registry of real official pages, live check, second citation
     freshness.py          corpus staleness audit
     export.py             markdown export of a plan
+    llm.py                optional wording layer, with the fact guard
+    chat.py               floating-assistant proxy: upstream call, reply guard, throttling
     server.py             local HTTP interface
     cli.py                command-line interface
   web/index.html          the interface (no build step, no external assets)
@@ -175,6 +234,8 @@ G70_AILT9019/
     smoke.py              live reachability and fallback proof
     live.py               official-page check, quote assertions and drift
     engine.py             decision-rule unit tests, corpus-independent
+    llm.py                wording-guard tests with a stubbed transport
+    chat.py               assistant guard and error-path tests, stubbed transport
     firstuse.py           clean-clone first-use check
     walkthrough.py        volunteer session recorder and report
     results/              generated evidence, not edited by hand
@@ -218,9 +279,9 @@ G70_AILT9019/
    return a limited answer by design (test D1).
 7. **Crude workload model.** A heavy course counts as two standard courses against the declared
    ceiling. It does not model actual assessment deadlines.
-8. **No language model.** The pilot deliberately has none, so there is no fluency comparison and no
-   model-based baseline; see `tests/results/baseline_<date>.md` for what the ablation does and does
-   not show.
+8. **The model is optional and cosmetic.** It rewrites one paragraph; it does not choose courses,
+   decide statuses or read sources. The 24-case evaluation runs with the model disabled so the
+   evidence stays reproducible, and there is no fluency comparison against a template baseline.
 
 ## 8. Safety and scope
 
