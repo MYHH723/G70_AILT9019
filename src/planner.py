@@ -14,7 +14,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
-from . import channels, official, safety
+from . import channels, llm as llm_layer, official, safety
 from .constraints import evaluate_course, resolve_exclusions
 from .retrieval import BM25, explicit_codes, opportunity_index, course_index, tokenize
 
@@ -287,7 +287,8 @@ def _ablation_answer(profile: dict[str, Any], query: str) -> tuple[str, list[str
 # ---------------------------------------------------------------------------
 def plan(profile: dict[str, Any], query: str, corpus, today: _dt.date | None = None,
          reachability: dict[str, str] | None = None,
-         retrieve: bool = True, live: bool = False) -> dict[str, Any]:
+         retrieve: bool = True, live: bool = False,
+         llm: bool | None = None) -> dict[str, Any]:
     """Build a plan.
 
     ``reachability`` maps an opportunity id to a live probe result
@@ -295,7 +296,9 @@ def plan(profile: dict[str, Any], query: str, corpus, today: _dt.date | None = N
     retrieval-disabled ablation used by the baseline comparison. ``live=True``
     also checks the real official pages this plan depends on and attaches them as
     a second, higher-authority citation; it needs network access and is therefore
-    opt-in.
+    opt-in. ``llm`` follows the environment by default: when a key is
+    configured the summary is rewritten by the model, otherwise the template
+    stands. It never changes which items appear or what status they carry.
     """
     today = _today(today)
     notices: list[str] = []
@@ -494,4 +497,9 @@ def plan(profile: dict[str, Any], query: str, corpus, today: _dt.date | None = N
             channel_check.result()
     else:
         channels.attach(base)
+
+    # One path, always taken, so the plan records which layer produced its
+    # prose even when no model is configured.
+    if llm is not False:
+        llm_layer.rewrite(base)
     return base

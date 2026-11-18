@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from . import chat
 from .corpus import DATA_DIR, get_corpus
 from .export import to_markdown
 from .fixtures import annotate, render as render_fixture
@@ -75,6 +76,16 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, data)
         if path == "/api/feedback/summary":
             return self._json(200, _feedback_summary())
+        if path == "/api/chat/status":
+            settings = chat.settings_from_env()
+            corpus = get_corpus()
+            return self._json(200, {
+                "configured": settings.enabled,
+                "model": settings.model,
+                # The exact instructions the assistant is given, so the panel can
+                # show them rather than describing them.
+                "prompt": chat.system_prompt(corpus),
+            })
 
         if path.startswith("/fixtures/"):
             segments = [s for s in path.split("/") if s]
@@ -109,6 +120,13 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(400, {"error": "query is required"})
             return self._json(200, annotate(plan(profile, query, get_corpus(),
                                                  live=bool(payload.get("live")))))
+
+        if path == "/api/chat":
+            messages = payload.get("messages") or []
+            if not isinstance(messages, list):
+                return self._json(400, {"error": "messages must be a list"})
+            result = chat.reply(messages, get_corpus(), context=payload.get("context") or {})
+            return self._json(200 if result.get("ok") else 502, result)
 
         if path == "/api/export":
             profile = payload.get("profile") or {}
